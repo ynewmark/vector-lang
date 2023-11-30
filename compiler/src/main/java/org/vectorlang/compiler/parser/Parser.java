@@ -65,7 +65,8 @@ public class Parser {
             consume(TokenType.SEMICOLON, null);
             Type type = type();
             return new DeclareStatement(constant, name, expression, type, 0, 0);
-        } else if (matches(TokenType.IF)) {
+        } else if (peek().type() == TokenType.IF) {
+            consume(TokenType.IF, null);
             consume(TokenType.OPEN_PAREN, null);
             Expression condition = expression();
             consume(TokenType.CLOSE_PAREN, null);
@@ -75,11 +76,11 @@ public class Parser {
                 elseStatement = statement();
             }
             return new IfStatement(ifStatement, elseStatement, condition, 0, 0);
-        } else if (matches(TokenType.IDENTIFIER)) {
+        } else if (peek().type() == TokenType.IDENTIFIER) {
             return assignStatement(true);
-        } else if (matches(TokenType.WHILE)) {
+        } else if (peek().type() == TokenType.WHILE) {
             return whileStatement();
-        } else if (matches(TokenType.FOR)) {
+        } else if (peek().type() == TokenType.FOR) {
             return forStatement();
         } else {
             throw new ParseException(null, 0);
@@ -87,9 +88,42 @@ public class Parser {
     }
 
     private AssignStatement assignStatement(boolean semicolon) throws ParseException {
+        consume(TokenType.IDENTIFIER, null);
         String name = previous().value();
-        consume(TokenType.EQUALS, name);
-        Expression expression = expression();
+        Expression expression = null;
+        if (matches(TokenType.EQUALS)) {
+            expression = expression();
+        } else if (matches(TokenType.PLUS_PLUS)) {
+            expression = new BinaryExpression(
+                new IdentifierExpression(name, 0, 0),
+                new LiteralExpression(1, 0, 0), BinaryOperator.ADD,
+            0, 0);
+        } else if (matches(TokenType.MINUS_MINUS)) {
+            expression = new BinaryExpression(
+                new IdentifierExpression(name, 0, 0),
+                new LiteralExpression(1, 0, 0), BinaryOperator.SUBTRACT,
+            0, 0);
+        } else {
+            BinaryOperator operator = null;
+            if (matches(TokenType.PLUS_EQUALs)) {
+                operator = BinaryOperator.ADD;
+            } else if (matches(TokenType.MINUS_EQUALS)) {
+                operator = BinaryOperator.SUBTRACT;
+            } else if (matches(TokenType.STAR_EQUALS)) {
+                operator = BinaryOperator.MULTIPLY;
+            } else if (matches(TokenType.SLASH_EQUALS)) {
+                operator = BinaryOperator.DIVIDE;
+            } else if (matches(TokenType.BAR_EQUALS)) {
+                operator = BinaryOperator.OR;
+            } else if (matches(TokenType.AMPERSAND_EQUALS)) {
+                operator = BinaryOperator.AND;
+            } else {
+                throw new ParseException(null, 0);
+            }
+            expression = new BinaryExpression(
+                new IdentifierExpression(name, 0, 0),
+                expression(), operator, 0, 0);
+        }
         if (semicolon) {
             consume(TokenType.SEMICOLON, null);
         }
@@ -97,6 +131,7 @@ public class Parser {
     }
 
     private WhileStatement whileStatement() throws ParseException {
+        consume(TokenType.WHILE, null);
         consume(TokenType.OPEN_PAREN, null);
         Expression condition = expression();
         consume(TokenType.CLOSE_PAREN, null);
@@ -105,11 +140,13 @@ public class Parser {
     }
 
     private ForStatement forStatement() throws ParseException {
+        consume(TokenType.FOR, null);
         consume(TokenType.OPEN_PAREN, null);
         Statement initial = statement();
         Expression condition = expression();
         consume(TokenType.SEMICOLON, null);
         AssignStatement each = assignStatement(false);
+        consume(TokenType.CLOSE_PAREN, null);
         Statement body = statement();
         return new ForStatement(condition, initial, each, body, 0, 0);
     }

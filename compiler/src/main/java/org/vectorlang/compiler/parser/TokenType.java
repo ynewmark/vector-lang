@@ -8,7 +8,9 @@ public enum TokenType {
     OPEN_PAREN, CLOSE_PAREN, OPEN_BRACE, CLOSE_BRACE, OPEN_BRACKET, CLOSE_BRACKET, SEMICOLON, EOF,
     WHILE, FUNC, IF, ELSE, FOR, RETURN, COLON, COMMA, LET, CONST, PRINT,
     EQUALS, EQUALS_EQUALS, LEFT_ARROW_EQUALS, LEFT_ARROW, RIGHT_ARROW_EQUALS, RIGHT_ARROW, BANG,
-    BANG_EQUALS, DASH, SLASH, STAR, PLUS, AMPERSAND, BAR, DOT_PLUS, DOT_DASH, DOT_SLASH, DOT_STAR;
+    BANG_EQUALS, DASH, SLASH, STAR, PLUS, AMPERSAND, BAR, DOT_PLUS, DOT_DASH, DOT_SLASH, DOT_STAR,
+    PLUS_PLUS, MINUS_MINUS, PLUS_EQUALs, MINUS_EQUALS, STAR_EQUALS, SLASH_EQUALS,
+    BAR_EQUALS, AMPERSAND_EQUALS;
 
     private final static TokenType[] SINGLES;
     private final static TokenType[][] DOUBLES;
@@ -64,6 +66,20 @@ public enum TokenType {
         DOUBLES['.']['*'] = DOT_STAR;
         DOUBLES['='] = new TokenType[256];
         DOUBLES['=']['='] = EQUALS_EQUALS;
+        DOUBLES['+'] = new TokenType[256];
+        DOUBLES['+']['+'] = PLUS_PLUS;
+        DOUBLES['+']['='] = PLUS_EQUALs;
+        DOUBLES['-'] = new TokenType[256];
+        DOUBLES['-']['-'] = MINUS_MINUS;
+        DOUBLES['-']['='] = MINUS_EQUALS;
+        DOUBLES['*'] = new TokenType[256];
+        DOUBLES['*']['='] = STAR_EQUALS;
+        DOUBLES['/'] = new TokenType[256];
+        DOUBLES['/']['='] = SLASH_EQUALS;
+        DOUBLES['|'] = new TokenType[256];
+        DOUBLES['|']['='] = BAR_EQUALS;
+        DOUBLES['&'] = new TokenType[256];
+        DOUBLES['&']['='] = AMPERSAND_EQUALS;
         KEYWORDS = new HashMap<>();
         KEYWORDS.put("true", TRUE);
         KEYWORDS.put("false", FALSE);
