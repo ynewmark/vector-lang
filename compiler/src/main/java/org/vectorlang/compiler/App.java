@@ -12,9 +12,9 @@ import org.vectorlang.compiler.ast.BlockStatement;
 import org.vectorlang.compiler.ast.Node;
 import org.vectorlang.compiler.compiler.Chunk;
 import org.vectorlang.compiler.compiler.Compiler;
-import org.vectorlang.compiler.compiler.State;
 import org.vectorlang.compiler.compiler.TypeFailure;
 import org.vectorlang.compiler.compiler.Typer;
+import org.vectorlang.compiler.compiler.TyperState;
 import org.vectorlang.compiler.parser.Lexer;
 import org.vectorlang.compiler.parser.ParseException;
 import org.vectorlang.compiler.parser.Parser;
@@ -58,7 +58,7 @@ public class App {
         }
         Typer typer = new Typer();
         org.vectorlang.compiler.compiler.Compiler compiler = new Compiler();
-        Node typed = block.accept(typer, new State());
+        Node typed = block.accept(typer, new TyperState());
         if (!typer.getFailures().isEmpty()) {
             System.err.println("There were the following type failures:");
             for (TypeFailure failure : typer.getFailures()) {
@@ -66,7 +66,7 @@ public class App {
             }
             System.exit(1);
         }
-        Chunk chunk = typed.accept(compiler, new State());
+        Chunk chunk = compiler.compile(typed);
         System.out.println("[Program]");
         System.out.println(chunk);
         if (args.length == 2) {

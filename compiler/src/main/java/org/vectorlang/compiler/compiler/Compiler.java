@@ -11,6 +11,7 @@ import org.vectorlang.compiler.ast.IdentifierExpression;
 import org.vectorlang.compiler.ast.IfStatement;
 import org.vectorlang.compiler.ast.IndexExpression;
 import org.vectorlang.compiler.ast.LiteralExpression;
+import org.vectorlang.compiler.ast.Node;
 import org.vectorlang.compiler.ast.PrintStatement;
 import org.vectorlang.compiler.ast.Statement;
 import org.vectorlang.compiler.ast.UnaryExpression;
@@ -18,10 +19,12 @@ import org.vectorlang.compiler.ast.UnaryOperator;
 import org.vectorlang.compiler.ast.VectorExpression;
 import org.vectorlang.compiler.ast.Visitor;
 
-public class Compiler implements Visitor<State, Chunk> {
+public class Compiler implements Visitor<CompilerState, Chunk> {
 
     private static UnaryTable<OpCode> unaryTable;
     private static BinaryTable<OpCode> binaryTable;
+
+    private Counter labelCounter;
 
     static {
         unaryTable = new UnaryTable<>();
@@ -41,8 +44,16 @@ public class Compiler implements Visitor<State, Chunk> {
         binaryTable.put(BaseType.FLOAT, BaseType.FLOAT, BinaryOperator.DIVIDE, OpCode.F_DIV);
     }
 
+    public Compiler() {
+        labelCounter = new Counter();
+    }
+
+    public Chunk compile(Node node) {
+        return node.accept(this, new CompilerState(null, labelCounter));
+    }
+
     @Override
-    public Chunk visitBinaryExpr(BinaryExpression expression, State arg) {
+    public Chunk visitBinaryExpr(BinaryExpression expression, CompilerState arg) {
         Chunk left = expression.getLeft().visitExpression(this, arg);
         Chunk right = expression.getRight().visitExpression(this, arg);
         BaseType type = expression.getType().getBaseType();
@@ -52,24 +63,24 @@ public class Compiler implements Visitor<State, Chunk> {
     }
 
     @Override
-    public Chunk visitGroupingExpr(GroupingExpression expression, State arg) {
+    public Chunk visitGroupingExpr(GroupingExpression expression, CompilerState arg) {
         return expression.getExpression().visitExpression(this, arg);
     }
 
     @Override
-    public Chunk visitIdentifierExpr(IdentifierExpression expression, State arg) {
-        return new Chunk(new long[]{OpCode.LOAD.ordinal(), arg.getId(expression.getName())});
+    public Chunk visitIdentifierExpr(IdentifierExpression expression, CompilerState arg) {
+        return new Chunk(new long[]{OpCode.LOAD.ordinal(), arg.get(expression.getName())});
     }
 
     @Override
-    public Chunk visitLiteralExpr(LiteralExpression expression, State arg) {
+    public Chunk visitLiteralExpr(LiteralExpression expression, CompilerState arg) {
         return new Chunk(new long[]{
             OpCode.PUSHI.ordinal(), expression.getRaw()
         });
     }
 
     @Override
-    public Chunk visitUnaryExpr(UnaryExpression expression, State arg) {
+    public Chunk visitUnaryExpr(UnaryExpression expression, CompilerState arg) {
         Chunk chunk = expression.getExpression().visitExpression(this, arg);
         return chunk.concat(new long[]{
             unaryTable.get(expression.getType().getBaseType(), expression.getOperator()).ordinal()
@@ -77,7 +88,7 @@ public class Compiler implements Visitor<State, Chunk> {
     }
 
     @Override
-    public Chunk visitVectorExpr(VectorExpression expression, State arg) {
+    public Chunk visitVectorExpr(VectorExpression expression, CompilerState arg) {
         boolean flag = false;
         Chunk chunk = new Chunk(new long[0]);
         for (Expression element : expression.getExpressions()) {
@@ -91,7 +102,7 @@ public class Compiler implements Visitor<State, Chunk> {
     }
 
     @Override
-    public Chunk visitIndexExpr(IndexExpression expression, State arg) {
+    public Chunk visitIndexExpr(IndexExpression expression, CompilerState arg) {
         Chunk chunk = expression.getBase().visitExpression(this, arg);
         chunk = chunk.concat(expression.getIndex().visitExpression(this, arg));
         return chunk.concat(new long[]{
@@ -100,16 +111,16 @@ public class Compiler implements Visitor<State, Chunk> {
     }
 
     @Override
-    public Chunk visitAssignStmt(AssignStatement node, State arg) {
+    public Chunk visitAssignStmt(AssignStatement node, CompilerState arg) {
         Chunk chunk = node.getRightHand().visitExpression(this, arg);
         return chunk.concat(new long[]{
-            OpCode.STORE.ordinal(), arg.getId(node.getLeftHand())
+            OpCode.STORE.ordinal(), arg.get(node.getLeftHand())
         });
     }
 
     @Override
-    public Chunk visitBlockStmt(BlockStatement node, State arg) {
-        State state = new State(arg);
+    public Chunk visitBlockStmt(BlockStatement node, CompilerState arg) {
+        CompilerState state = new CompilerState(arg, labelCounter);
         Chunk chunk = new Chunk(new long[0]);
         for (Statement statement : node.getStatements()) {
             chunk = chunk.concat(statement.visitStatement(this, state));
@@ -118,32 +129,32 @@ public class Compiler implements Visitor<State, Chunk> {
     }
 
     @Override
-    public Chunk visitDeclareStmt(DeclareStatement node, State arg) {
+    public Chunk visitDeclareStmt(DeclareStatement node, CompilerState arg) {
         Chunk chunk = new Chunk(new long[0]);
         if (node.getInitial() != null) {
             chunk = node.getInitial().visitExpression(this, arg);
         }
-        arg.put(node.getName(), null);
+        arg.put(node.getName());
         chunk = chunk.concat(new long[]{
             OpCode.ALLOC.ordinal(), node.getInitial().getType().getSize()
         });
         if (node.getInitial() != null) {
             chunk = chunk.concat(new long[]{
-                OpCode.STORE.ordinal(), arg.getId(node.getName())
+                OpCode.STORE.ordinal(), arg.get(node.getName())
             });
         }
         return chunk;
     }
 
     @Override
-    public Chunk visitPrintStmt(PrintStatement node, State arg) {
+    public Chunk visitPrintStmt(PrintStatement node, CompilerState arg) {
         return node.getExpression().visitExpression(this, arg).concat(new long[]{
             OpCode.PRINT.ordinal(), node.getExpression().getType().getBaseType().ordinal()
         });
     }
 
     @Override
-    public Chunk visitIfStmt(IfStatement node, State arg) {
+    public Chunk visitIfStmt(IfStatement node, CompilerState arg) {
         // TODO Auto-generated method stub
         throw new UnsupportedOperationException("Unimplemented method 'visitIfStmt'");
     }

@@ -22,7 +22,7 @@ import org.vectorlang.compiler.ast.UnaryOperator;
 import org.vectorlang.compiler.ast.VectorExpression;
 import org.vectorlang.compiler.ast.Visitor;
 
-public class Typer implements Visitor<State, Node> {
+public class Typer implements Visitor<TyperState, Node> {
 
     private static UnaryTable<BaseType> unaryTable;
     private static BinaryTable<BaseType> binaryTable;
@@ -70,7 +70,7 @@ public class Typer implements Visitor<State, Node> {
     }
 
     @Override
-    public Node visitBinaryExpr(BinaryExpression expression, State arg) {
+    public Node visitBinaryExpr(BinaryExpression expression, TyperState arg) {
         Expression left = (Expression) expression.getLeft().visitExpression(this, arg);
         Expression right = (Expression) expression.getRight().visitExpression(this, arg);
         BaseType result = binaryTable.get(
@@ -85,13 +85,13 @@ public class Typer implements Visitor<State, Node> {
     }
 
     @Override
-    public Node visitGroupingExpr(GroupingExpression expression, State arg) {
+    public Node visitGroupingExpr(GroupingExpression expression, TyperState arg) {
         Expression newExpression = (Expression) expression.getExpression().visitExpression(this, arg);
         return new GroupingExpression(newExpression, newExpression.getType(), 0, 0);
     }
 
     @Override
-    public Node visitIdentifierExpr(IdentifierExpression expression, State arg) {
+    public Node visitIdentifierExpr(IdentifierExpression expression, TyperState arg) {
         Type type = arg.get(expression.getName());
         if (type == null) {
             failures.add(new TypeFailure(null, null, expression.getName() + " not found"));
@@ -101,12 +101,12 @@ public class Typer implements Visitor<State, Node> {
     }
 
     @Override
-    public Node visitLiteralExpr(LiteralExpression expression, State arg) {
+    public Node visitLiteralExpr(LiteralExpression expression, TyperState arg) {
         return expression;
     }
 
     @Override
-    public Node visitUnaryExpr(UnaryExpression expression, State arg) {
+    public Node visitUnaryExpr(UnaryExpression expression, TyperState arg) {
         Expression expr = (Expression) expression.getExpression().visitExpression(this, arg);
         BaseType result = unaryTable.get(expr.getType().getBaseType(), expression.getOperator());
         if (result == null) {
@@ -118,7 +118,7 @@ public class Typer implements Visitor<State, Node> {
     }
 
     @Override
-    public Node visitVectorExpr(VectorExpression expression, State arg) {
+    public Node visitVectorExpr(VectorExpression expression, TyperState arg) {
         if (expression.getExpressions().length == 0) {
             failures.add(new TypeFailure(null, null, "length of 0"));
             return expression;
@@ -136,7 +136,7 @@ public class Typer implements Visitor<State, Node> {
     }
 
     @Override
-    public Node visitIndexExpr(IndexExpression expression, State arg) {
+    public Node visitIndexExpr(IndexExpression expression, TyperState arg) {
         Expression newBase = (Expression) expression.getBase().visitExpression(this, arg);
         Expression newIndex = (Expression) expression.getIndex().visitExpression(this, arg);
         if (!newIndex.getType().equals(new Type(new Shape(BaseType.INT, new int[0]), false))) {
@@ -146,7 +146,7 @@ public class Typer implements Visitor<State, Node> {
     }
 
     @Override
-    public Node visitAssignStmt(AssignStatement node, State arg) {
+    public Node visitAssignStmt(AssignStatement node, TyperState arg) {
         Expression expression = (Expression) node.getRightHand().visitExpression(this, arg);
         if (arg.get(node.getLeftHand()) == null) {
             failures.add(new TypeFailure(null, null, node.getLeftHand() + " not found"));
@@ -157,9 +157,9 @@ public class Typer implements Visitor<State, Node> {
     }
 
     @Override
-    public Node visitBlockStmt(BlockStatement node, State arg) {
+    public Node visitBlockStmt(BlockStatement node, TyperState arg) {
         List<Statement> statements = new ArrayList<>();
-        State inner = new State(arg);
+        TyperState inner = new TyperState(arg);
         for (Statement statement : node.getStatements()) {
             statements.add((Statement) statement.visitStatement(this, inner));
         }
@@ -167,7 +167,7 @@ public class Typer implements Visitor<State, Node> {
     }
 
     @Override
-    public Node visitDeclareStmt(DeclareStatement node, State arg) {
+    public Node visitDeclareStmt(DeclareStatement node, TyperState arg) {
         Expression initial = (Expression) node.getInitial().visitExpression(this, arg);
         if (node.getType() != null && !node.getType().equals(initial.getType())) {
             failures.add(new TypeFailure(node.getType(), initial.getType(), "types mismatch"));
@@ -178,13 +178,13 @@ public class Typer implements Visitor<State, Node> {
     }
 
     @Override
-    public Node visitPrintStmt(PrintStatement node, State arg) {
+    public Node visitPrintStmt(PrintStatement node, TyperState arg) {
         Expression expression = (Expression) node.getExpression().visitExpression(this, arg);
         return new PrintStatement(expression, 0, 0);
     }
     
     @Override
-    public Node visitIfStmt(IfStatement node, State arg) {
+    public Node visitIfStmt(IfStatement node, TyperState arg) {
         Expression condition = (Expression) node.getCondition().visitExpression(this, arg);
         if (condition.getType().equals(new Type(new Shape(BaseType.BOOL, new int[0]), false))) {
             failures.add(new TypeFailure(condition.getType(), null, "condition must be a boolean"));
