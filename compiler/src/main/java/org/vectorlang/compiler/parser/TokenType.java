@@ -62,6 +62,8 @@ public enum TokenType {
         DOUBLES['.']['-'] = DOT_DASH;
         DOUBLES['.']['/'] = DOT_SLASH;
         DOUBLES['.']['*'] = DOT_STAR;
+        DOUBLES['='] = new TokenType[256];
+        DOUBLES['=']['='] = EQUALS_EQUALS;
         KEYWORDS = new HashMap<>();
         KEYWORDS.put("true", TRUE);
         KEYWORDS.put("false", FALSE);

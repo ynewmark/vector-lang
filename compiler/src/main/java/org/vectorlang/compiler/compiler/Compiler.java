@@ -42,6 +42,20 @@ public class Compiler implements Visitor<CompilerState, Chunk> {
         binaryTable.put(BaseType.FLOAT, BaseType.FLOAT, BinaryOperator.SUBTRACT, OpCode.F_SUB);
         binaryTable.put(BaseType.FLOAT, BaseType.FLOAT, BinaryOperator.MULTIPLY, OpCode.F_MULT);
         binaryTable.put(BaseType.FLOAT, BaseType.FLOAT, BinaryOperator.DIVIDE, OpCode.F_DIV);
+        binaryTable.put(BaseType.INT, BaseType.INT, BinaryOperator.EQUAL, OpCode.EQ);
+        binaryTable.put(BaseType.INT, BaseType.INT, BinaryOperator.NOT_EQUAL, OpCode.NEQ);
+        binaryTable.put(BaseType.INT, BaseType.INT, BinaryOperator.LESS_THAN, OpCode.LT);
+        binaryTable.put(BaseType.INT, BaseType.INT, BinaryOperator.EQUAL_LESS_THAN, OpCode.LTE);
+        binaryTable.put(BaseType.INT, BaseType.INT, BinaryOperator.GREATER_THAN, OpCode.GT);
+        binaryTable.put(BaseType.INT, BaseType.INT, BinaryOperator.EQUAL_GREATER_THAN, OpCode.GTE);
+        binaryTable.put(BaseType.FLOAT, BaseType.FLOAT, BinaryOperator.EQUAL, OpCode.F_EQ);
+        binaryTable.put(BaseType.FLOAT, BaseType.FLOAT, BinaryOperator.NOT_EQUAL, OpCode.F_NEQ);
+        binaryTable.put(BaseType.FLOAT, BaseType.FLOAT, BinaryOperator.LESS_THAN, OpCode.F_LT);
+        binaryTable.put(BaseType.FLOAT, BaseType.FLOAT, BinaryOperator.EQUAL_LESS_THAN, OpCode.F_LTE);
+        binaryTable.put(BaseType.FLOAT, BaseType.FLOAT, BinaryOperator.GREATER_THAN, OpCode.F_GT);
+        binaryTable.put(BaseType.FLOAT, BaseType.FLOAT, BinaryOperator.EQUAL_GREATER_THAN, OpCode.F_GTE);
+        binaryTable.put(BaseType.BOOL, BaseType.BOOL, BinaryOperator.EQUAL, OpCode.B_EQ);
+        binaryTable.put(BaseType.BOOL, BaseType.BOOL, BinaryOperator.NOT_EQUAL, OpCode.B_NEQ);
     }
 
     public Compiler() {
@@ -56,7 +70,7 @@ public class Compiler implements Visitor<CompilerState, Chunk> {
     public Chunk visitBinaryExpr(BinaryExpression expression, CompilerState arg) {
         Chunk left = expression.getLeft().visitExpression(this, arg);
         Chunk right = expression.getRight().visitExpression(this, arg);
-        BaseType type = expression.getType().getBaseType();
+        BaseType type = expression.getLeft().getType().getBaseType();
         return left.concat(right).concat(new long[]{
             binaryTable.get(type, type, expression.getOperator()).ordinal()
         });

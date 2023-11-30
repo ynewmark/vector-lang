@@ -55,6 +55,48 @@ void calc_binary(unsigned long opcode, void *operand1, void *operand2, void *des
         } else if (opcode == OP_OR) {
             *(((char *) destination) + index) = *((((char *) operand1)) + index) | *((((char *) operand2)) + index);
             index = index + 8;
+        } else if (opcode == OP_EQ) {
+            *(((char *) destination) + (index * 4)) = *((((int *) operand1)) + index) == *((((int *) operand2)) + index);
+            index = index + 2;
+        } else if (opcode == OP_NEQ) {
+            *(((char *) destination) + (index * 4)) = *((((int *) operand1)) + index) != *((((int *) operand2)) + index);
+            index = index + 2;
+        } else if (opcode == OP_B_EQ) {
+            *(((char *) destination) + index) = *((((char *) operand1)) + index) == *((((char *) operand2)) + index);
+            index = index + 8;
+        } else if (opcode == OP_B_NEQ) {
+            *(((char *) destination) + index) = *((((char *) operand1)) + index) != *((((char *) operand2)) + index);
+            index = index + 8;
+        } else if (opcode == OP_F_EQ) {
+            *(((char *) destination) + (index * 8)) = *((((double *) operand1)) + index) == *((((double *) operand2)) + index);
+            index = index + 1;
+        } else if (opcode == OP_F_NEQ) {
+            *(((char *) destination) + (index * 8)) = *((((double *) operand1)) + index) != *((((double *) operand2)) + index);
+            index = index + 1;
+        } else if (opcode == OP_LT) {
+            *(((char *) destination) + (index * 4)) = *((((int *) operand1)) + index) < *((((int *) operand2)) + index);
+            index = index + 2;
+        } else if (opcode == OP_LTE) {
+            *(((char *) destination) + (index * 4)) = *((((int *) operand1)) + index) <= *((((int *) operand2)) + index);
+            index = index + 2;
+        } else if (opcode == OP_GT) {
+            *(((char *) destination) + (index * 4)) = *((((int *) operand1)) + index) > *((((int *) operand2)) + index);
+            index = index + 2;
+        } else if (opcode == OP_GTE) {
+            *(((char *) destination) + (index * 4)) = *((((int *) operand1)) + index) >= *((((int *) operand2)) + index);
+            index = index + 2;
+        } else if (opcode == OP_F_LT) {
+            *(((char *) destination) + (index * 8)) = *((((double *) operand1)) + index) < *((((double *) operand2)) + index);
+            index = index + 1;
+        } else if (opcode == OP_F_LTE) {
+            *(((char *) destination) + (index * 8)) = *((((double *) operand1)) + index) <= *((((double *) operand2)) + index);
+            index = index + 1;
+        } else if (opcode == OP_F_GT) {
+            *(((char *) destination) + (index * 8)) = *((((double *) operand1)) + index) > *((((double *) operand2)) + index);
+            index = index + 1;
+        } else if (opcode == OP_F_GTE) {
+            *(((char *) destination) + (index * 8)) = *((((double *) operand1)) + index) >= *((((double *) operand2)) + index);
+            index = index + 1;
         }
     }
 }

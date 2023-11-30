@@ -24,7 +24,7 @@ int get_operand(void **pointer) {
 
 void step() {
     unsigned long instr = program[counter++];
-    if (instr < 10) {
+    if (instr < 24) {
         void *operand1, *operand2, *destination;
         int size;
         size = get_operand(&operand2);
@@ -36,7 +36,7 @@ void step() {
         item.data.size = size;
         stack_skip(size);
         stack_push(item);
-    } else if (instr < 13) {
+    } else if (instr < 27) {
         void *operand, *destination;
         int size;
         size = get_operand(&operand);
