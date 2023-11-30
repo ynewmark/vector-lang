@@ -9,6 +9,7 @@ import org.vectorlang.compiler.ast.BinaryOperator;
 import org.vectorlang.compiler.ast.BlockStatement;
 import org.vectorlang.compiler.ast.DeclareStatement;
 import org.vectorlang.compiler.ast.Expression;
+import org.vectorlang.compiler.ast.ForStatement;
 import org.vectorlang.compiler.ast.GroupingExpression;
 import org.vectorlang.compiler.ast.IdentifierExpression;
 import org.vectorlang.compiler.ast.IfStatement;
@@ -19,6 +20,7 @@ import org.vectorlang.compiler.ast.Statement;
 import org.vectorlang.compiler.ast.UnaryExpression;
 import org.vectorlang.compiler.ast.UnaryOperator;
 import org.vectorlang.compiler.ast.VectorExpression;
+import org.vectorlang.compiler.ast.WhileStatement;
 import org.vectorlang.compiler.compiler.BaseType;
 import org.vectorlang.compiler.compiler.Shape;
 import org.vectorlang.compiler.compiler.Type;
@@ -74,14 +76,42 @@ public class Parser {
             }
             return new IfStatement(ifStatement, elseStatement, condition, 0, 0);
         } else if (matches(TokenType.IDENTIFIER)) {
-            String name = previous().value();
-            consume(TokenType.EQUALS, name);
-            Expression expression = expression();
-            consume(TokenType.SEMICOLON, null);
-            return new AssignStatement(name, expression, 0, 0);
+            return assignStatement(true);
+        } else if (matches(TokenType.WHILE)) {
+            return whileStatement();
+        } else if (matches(TokenType.FOR)) {
+            return forStatement();
         } else {
             throw new ParseException(null, 0);
         }
+    }
+
+    private AssignStatement assignStatement(boolean semicolon) throws ParseException {
+        String name = previous().value();
+        consume(TokenType.EQUALS, name);
+        Expression expression = expression();
+        if (semicolon) {
+            consume(TokenType.SEMICOLON, null);
+        }
+        return new AssignStatement(name, expression, 0, 0);
+    }
+
+    private WhileStatement whileStatement() throws ParseException {
+        consume(TokenType.OPEN_PAREN, null);
+        Expression condition = expression();
+        consume(TokenType.CLOSE_PAREN, null);
+        Statement body = statement();
+        return new WhileStatement(condition, body, 0, 0);
+    }
+
+    private ForStatement forStatement() throws ParseException {
+        consume(TokenType.OPEN_PAREN, null);
+        Statement initial = statement();
+        Expression condition = expression();
+        consume(TokenType.SEMICOLON, null);
+        AssignStatement each = assignStatement(false);
+        Statement body = statement();
+        return new ForStatement(condition, initial, each, body, 0, 0);
     }
 
     private Expression expression() throws ParseException {

@@ -9,6 +9,7 @@ import org.vectorlang.compiler.ast.BinaryOperator;
 import org.vectorlang.compiler.ast.BlockStatement;
 import org.vectorlang.compiler.ast.DeclareStatement;
 import org.vectorlang.compiler.ast.Expression;
+import org.vectorlang.compiler.ast.ForStatement;
 import org.vectorlang.compiler.ast.GroupingExpression;
 import org.vectorlang.compiler.ast.IdentifierExpression;
 import org.vectorlang.compiler.ast.IfStatement;
@@ -21,6 +22,7 @@ import org.vectorlang.compiler.ast.UnaryExpression;
 import org.vectorlang.compiler.ast.UnaryOperator;
 import org.vectorlang.compiler.ast.VectorExpression;
 import org.vectorlang.compiler.ast.Visitor;
+import org.vectorlang.compiler.ast.WhileStatement;
 
 public class Typer implements Visitor<TyperState, Node> {
 
@@ -195,5 +197,28 @@ public class Typer implements Visitor<TyperState, Node> {
             elseStatement = (Statement) node.getElseStatement().visitStatement(this, arg);
         }
         return new IfStatement(ifStatement, elseStatement, condition, 0, 0);
+    }
+
+    @Override
+    public Node visitWhileStmt(WhileStatement node, TyperState arg) {
+        Expression condition = (Expression) node.getCondition().visitExpression(this, arg);
+        if (!condition.getType().equals(new Type(new Shape(BaseType.BOOL, new int[0]), false))) {
+            failures.add(new TypeFailure(condition.getType(), null, "condition must be a boolean"));
+        }
+        Statement body = (Statement) node.getBody().visitStatement(this, arg);
+        return new WhileStatement(condition, body, 0, 0);
+    }
+
+    @Override
+    public Node visitForStmt(ForStatement node, TyperState arg) {
+        TyperState state = new TyperState(arg);
+        Statement initial = (Statement) node.getInitial().visitStatement(this, state);
+        AssignStatement each = (AssignStatement) node.getEach().visitStatement(this, state);
+        Expression condition = (Expression) node.getCondition().visitExpression(this, state);
+        if (!condition.getType().equals(new Type(new Shape(BaseType.BOOL, new int[0]), false))) {
+            failures.add(new TypeFailure(condition.getType(), null, "condition must be a boolean"));
+        }
+        Statement body = (Statement) node.getBody().visitStatement(this, state);
+        return new ForStatement(condition, initial, each, body, 0, 0);
     }
 }

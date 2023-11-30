@@ -6,6 +6,7 @@ import org.vectorlang.compiler.ast.BinaryOperator;
 import org.vectorlang.compiler.ast.BlockStatement;
 import org.vectorlang.compiler.ast.DeclareStatement;
 import org.vectorlang.compiler.ast.Expression;
+import org.vectorlang.compiler.ast.ForStatement;
 import org.vectorlang.compiler.ast.GroupingExpression;
 import org.vectorlang.compiler.ast.IdentifierExpression;
 import org.vectorlang.compiler.ast.IfStatement;
@@ -18,6 +19,7 @@ import org.vectorlang.compiler.ast.UnaryExpression;
 import org.vectorlang.compiler.ast.UnaryOperator;
 import org.vectorlang.compiler.ast.VectorExpression;
 import org.vectorlang.compiler.ast.Visitor;
+import org.vectorlang.compiler.ast.WhileStatement;
 
 public class Compiler implements Visitor<CompilerState, Chunk> {
 
@@ -183,6 +185,35 @@ public class Compiler implements Visitor<CompilerState, Chunk> {
             OpCode.JMP.ordinal(), arg.addLabel()
         }, new long[]{2 + ifChunk.length()});
         chunk = chunk.concat(ifChunk);
+        return chunk;
+    }
+
+    @Override
+    public Chunk visitWhileStmt(WhileStatement node, CompilerState arg) {
+        Chunk bodyChunk = node.getBody().visitStatement(this, arg);
+        Chunk chunk = new Chunk(new long[]{
+            OpCode.JMP.ordinal(), arg.addLabel()
+        }, new long[]{2 + bodyChunk.length()}).concat(bodyChunk);
+        Chunk condChunk = node.getCondition().visitExpression(this, arg);
+        chunk = chunk.concat(condChunk).concat(new long[]{
+            OpCode.JIF.ordinal(), arg.addLabel()
+        }, new long[]{-(condChunk.length() + bodyChunk.length())});
+        return chunk;
+    }
+
+    @Override
+    public Chunk visitForStmt(ForStatement node, CompilerState arg) {
+        Chunk chunk = node.getInitial().visitStatement(this, arg);
+        Chunk bodyChunk = node.getBody().visitStatement(this, arg).concat(
+            node.getEach().visitStatement(this, arg)
+        );
+        chunk = chunk.concat(new long[]{
+            OpCode.JMP.ordinal(), arg.addLabel()
+        }, new long[]{2 + bodyChunk.length()}).concat(bodyChunk);
+        Chunk condChunk = node.getCondition().visitExpression(this, arg);
+        chunk = chunk.concat(condChunk).concat(new long[]{
+            OpCode.JIF.ordinal(), arg.addLabel()
+        }, new long[]{-(condChunk.length() + bodyChunk.length())});
         return chunk;
     }
     
