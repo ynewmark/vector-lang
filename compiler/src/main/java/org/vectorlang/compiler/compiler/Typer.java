@@ -186,11 +186,14 @@ public class Typer implements Visitor<TyperState, Node> {
     @Override
     public Node visitIfStmt(IfStatement node, TyperState arg) {
         Expression condition = (Expression) node.getCondition().visitExpression(this, arg);
-        if (condition.getType().equals(new Type(new Shape(BaseType.BOOL, new int[0]), false))) {
+        if (!condition.getType().equals(new Type(new Shape(BaseType.BOOL, new int[0]), false))) {
             failures.add(new TypeFailure(condition.getType(), null, "condition must be a boolean"));
         }
         Statement ifStatement = (Statement) node.getIfStatement().visitStatement(this, arg);
-        Statement elseStatement = (Statement) node.getElseStatement().visitStatement(this, arg);
+        Statement elseStatement = null;
+        if (node.getElseStatement() != null) {
+            elseStatement = (Statement) node.getElseStatement().visitStatement(this, arg);
+        }
         return new IfStatement(ifStatement, elseStatement, condition, 0, 0);
     }
 }

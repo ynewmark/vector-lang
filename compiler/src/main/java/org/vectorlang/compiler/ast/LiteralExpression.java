@@ -51,7 +51,7 @@ public class LiteralExpression extends Expression {
         if (type == 0) {
             return this.intValue;
         } else if (type == 1) {
-            return this.boolValue ? 0 : Long.MIN_VALUE;
+            return this.boolValue ? 1 : 0;
         } else if (type == 2) {
             return Double.doubleToLongBits(this.floatValue);
         } else {

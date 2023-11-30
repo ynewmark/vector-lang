@@ -1,0 +1,15 @@
+let a = [1, 2, 3];
+
+let condition = false;
+
+if (condition) {
+    let a = [3.4, 1.2, 5.6];
+    print a;
+} else {
+    let b = [12, 23, 34];
+    print b;
+}
+
+if (!condition) {
+    print a;
+}

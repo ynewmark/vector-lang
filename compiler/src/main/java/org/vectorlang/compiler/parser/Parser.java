@@ -298,6 +298,9 @@ public class Parser {
     }
 
     private Token peek() {
+        if (!hasNext()) {
+            return new Token(TokenType.EOF, null, 0, 0);
+        }
         return tokens.get(position);
     }
 

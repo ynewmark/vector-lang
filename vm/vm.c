@@ -63,7 +63,7 @@ void step() {
         } else if (instr == OP_JIF) {
             unsigned long *condition;
             get_operand((void **) &condition);
-            if (*condition) {
+            if (*((char *) condition)) {
                 counter = arg;
             }
         } else if (instr == OP_STORE) {

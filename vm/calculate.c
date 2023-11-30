@@ -12,7 +12,11 @@ void calc_unary(unsigned long opcode, void *operand, void *destination, int size
             *(((double *) destination) + index) = -*((((double *) operand)) + index);
             index = index + 1;
         } else if (opcode == OP_NOT) {
-            *(((char *) destination) + index) = ~*((((char *) operand)) + index);
+            if (*((((char *) operand)) + index) == 0) {
+                *(((char *) destination) + index) = 1;
+            } else {
+                *(((char *) destination) + index) = 0;
+            }
             index = index + 8;
         }
     }

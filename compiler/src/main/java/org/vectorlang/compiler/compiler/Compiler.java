@@ -49,7 +49,7 @@ public class Compiler implements Visitor<CompilerState, Chunk> {
     }
 
     public Chunk compile(Node node) {
-        return node.accept(this, new CompilerState(null, labelCounter));
+        return node.accept(this, new CompilerState(null, labelCounter)).link();
     }
 
     @Override
@@ -155,8 +155,21 @@ public class Compiler implements Visitor<CompilerState, Chunk> {
 
     @Override
     public Chunk visitIfStmt(IfStatement node, CompilerState arg) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'visitIfStmt'");
+        Chunk ifChunk = node.getIfStatement().visitStatement(this, arg);
+        int elseLength = 0;
+        Chunk elseChunk = new Chunk(new long[0]);
+        if (node.getElseStatement() != null) {
+            elseChunk = node.getElseStatement().visitStatement(this, arg);
+            elseLength = elseChunk.length();
+        }
+        Chunk chunk = node.getCondition().visitExpression(this, arg).concat(new long[]{
+            OpCode.JIF.ordinal(), arg.addLabel()
+        }, new long[]{2 + elseLength + 2});
+        chunk = chunk.concat(elseChunk).concat(new long[]{
+            OpCode.JMP.ordinal(), arg.addLabel()
+        }, new long[]{2 + ifChunk.length()});
+        chunk = chunk.concat(ifChunk);
+        return chunk;
     }
     
 }
