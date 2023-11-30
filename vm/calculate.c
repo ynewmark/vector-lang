@@ -1,10 +1,10 @@
 #include "calculate.h"
-#include "stack.h"
 #include "opcode.h"
 
 void calc_unary(unsigned long opcode, void *operand, void *destination, int size) {
     int index = 0;
-    while ((long unsigned int) index < (size * sizeof(union StackItem))) {
+    int current = 0;
+    while (current < size) {
         if (opcode == OP_NEG) {
             *(((int *) destination) + index) = -*((((int *) operand)) + index);
             index = index + 2;
@@ -19,12 +19,14 @@ void calc_unary(unsigned long opcode, void *operand, void *destination, int size
             }
             index = index + 8;
         }
+        current++;
     }
 }
 
 void calc_binary(unsigned long opcode, void *operand1, void *operand2, void *destination, int size) {
     int index = 0;
-    while ((long unsigned int) index < (size * sizeof(union StackItem))) {
+    int current = 0;
+    while (current < size) {
         if (opcode == OP_ADD) {
             *(((int *) destination) + index) = *((((int *) operand1)) + index) + *((((int *) operand2)) + index);
             index = index + 2;
@@ -98,5 +100,6 @@ void calc_binary(unsigned long opcode, void *operand1, void *operand2, void *des
             *(((char *) destination) + (index * 8)) = *((((double *) operand1)) + index) >= *((((double *) operand2)) + index);
             index = index + 1;
         }
+        current++;
     }
 }
