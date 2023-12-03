@@ -1,7 +1,14 @@
+/* example.vec
+An assorted example
+*/
+
+// some literals
 let a = [123 / 3, 45 - 2, 78 * 3, 56];
 let b = [a[0] + 1, -7, 235, a[2] * 2];
+
+// print 'b', modify it, and print it again
 print b;
-b = b + [1, 1, 1, 1];
+b = b + [1 /* all of these are the same */, 1, 1, 1];
 print b;
 let c = a + b;
-print a; print c;
+print a; print c; // two things on one line

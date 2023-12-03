@@ -17,7 +17,17 @@ public class Lexer {
     public List<Token> lex() {
         while (hasNext()) {
             char next = next();
-            if (TokenType.getDouble(next, peek()) != null) {
+            if (next == '/' && peek() == '/') {
+                next();
+                while (peek() != '\n' && peek() != '\0') {
+                    next();
+                }
+            } else if (next == '/' && peek() == '*') {
+                next();
+                while (!commentEnd()) {
+                    next();
+                }
+            } else if (TokenType.getDouble(next, peek()) != null) {
                 char temp = next();
                 addToken(TokenType.getDouble(next, temp), 2);
             } else if (TokenType.getSingle(next) != null) {
@@ -83,5 +93,13 @@ public class Lexer {
 
     private void addToken(TokenType type, String value) {
         this.tokens.add(new Token(type, value, index - value.length(), value.length()));
+    }
+
+    private boolean commentEnd() {
+        boolean flag = index + 2 >= text.length() || (text.charAt(index) == '*' && text.charAt(index + 1) == '/');
+        if (flag) {
+            index += 2;
+        }
+        return flag;
     }
 }
