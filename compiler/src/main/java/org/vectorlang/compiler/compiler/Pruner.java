@@ -7,9 +7,11 @@ import org.vectorlang.compiler.ast.AssignStatement;
 import org.vectorlang.compiler.ast.BinaryExpression;
 import org.vectorlang.compiler.ast.BinaryOperator;
 import org.vectorlang.compiler.ast.BlockStatement;
+import org.vectorlang.compiler.ast.CallExpression;
 import org.vectorlang.compiler.ast.DeclareStatement;
 import org.vectorlang.compiler.ast.Expression;
 import org.vectorlang.compiler.ast.ForStatement;
+import org.vectorlang.compiler.ast.FunctionStatement;
 import org.vectorlang.compiler.ast.GroupingExpression;
 import org.vectorlang.compiler.ast.IdentifierExpression;
 import org.vectorlang.compiler.ast.IfStatement;
@@ -17,6 +19,7 @@ import org.vectorlang.compiler.ast.IndexExpression;
 import org.vectorlang.compiler.ast.LiteralExpression;
 import org.vectorlang.compiler.ast.Node;
 import org.vectorlang.compiler.ast.PrintStatement;
+import org.vectorlang.compiler.ast.ReturnStatement;
 import org.vectorlang.compiler.ast.Statement;
 import org.vectorlang.compiler.ast.StaticExpression;
 import org.vectorlang.compiler.ast.UnaryExpression;
@@ -219,5 +222,32 @@ public class Pruner implements Visitor<Void, Node> {
         return (LiteralExpression expr1, LiteralExpression expr2) -> {
             return new LiteralExpression(function.apply(expr1.getFloat(), expr2.getFloat()), 0, 0);
         };
+    }
+
+    @Override
+    public Node visitCallExpression(CallExpression expression, Void arg) {
+        Expression[] args = new Expression[expression.getArgs().length];
+        for (int i = 0; i < args.length; i++) {
+            args[i] = (Expression) expression.getArgs()[i].visitExpression(this, null);
+        }
+        return new CallExpression(expression.getName(), args, expression.getType(), 0, 0);
+    }
+
+    @Override
+    public Node visitFunctionStmt(FunctionStatement node, Void arg) {
+        Statement[] statements = new Statement[node.getBody().length];
+        for (int i = 0; i < statements.length; i++) {
+            statements[i] = (Statement) node.getBody()[i].visitStatement(this, null);
+        }
+        return new FunctionStatement(
+            node.getName(), node.getParameterNames(), node.getParameterTypes(), statements,
+            node.getReturnType(), 0, 0
+        );
+    }
+
+    @Override
+    public Node visitReturnStmt(ReturnStatement node, Void arg) {
+        Expression expression = (Expression) node.getExpression().visitExpression(this, null);
+        return new ReturnStatement(expression, 0, 0);
     }
 }
