@@ -15,6 +15,7 @@ import org.vectorlang.compiler.ast.LiteralExpression;
 import org.vectorlang.compiler.ast.Node;
 import org.vectorlang.compiler.ast.PrintStatement;
 import org.vectorlang.compiler.ast.Statement;
+import org.vectorlang.compiler.ast.StaticExpression;
 import org.vectorlang.compiler.ast.UnaryExpression;
 import org.vectorlang.compiler.ast.UnaryOperator;
 import org.vectorlang.compiler.ast.VectorExpression;
@@ -26,7 +27,7 @@ public class Compiler implements Visitor<CompilerState, Chunk> {
     private static UnaryTable<OpCode> unaryTable;
     private static BinaryTable<OpCode> binaryTable;
 
-    private Counter labelCounter;
+    private Counter labelCounter, staticCounter;
 
     static {
         unaryTable = new UnaryTable<>();
@@ -62,10 +63,11 @@ public class Compiler implements Visitor<CompilerState, Chunk> {
 
     public Compiler() {
         labelCounter = new Counter();
+        staticCounter = new Counter();
     }
 
     public Chunk compile(Node node) {
-        return node.accept(this, new CompilerState(null, labelCounter)).link();
+        return node.accept(this, new CompilerState(null, labelCounter, staticCounter)).link();
     }
 
     @Override
@@ -136,7 +138,7 @@ public class Compiler implements Visitor<CompilerState, Chunk> {
 
     @Override
     public Chunk visitBlockStmt(BlockStatement node, CompilerState arg) {
-        CompilerState state = new CompilerState(arg, labelCounter);
+        CompilerState state = new CompilerState(arg, labelCounter, staticCounter);
         Chunk chunk = new Chunk(new long[0]);
         for (Statement statement : node.getStatements()) {
             chunk = chunk.concat(statement.visitStatement(this, state));
@@ -215,6 +217,13 @@ public class Compiler implements Visitor<CompilerState, Chunk> {
             OpCode.JIF.ordinal(), arg.addLabel()
         }, new long[]{-(condChunk.length() + bodyChunk.length())});
         return chunk;
+    }
+
+    @Override
+    public Chunk visitStaticExpr(StaticExpression expression, CompilerState arg) {
+        return new Chunk(new long[]{
+            OpCode.LOADS.ordinal(), staticCounter.getAndIncrement()
+        }, new long[0], new long[][]{expression.getData()});
     }
     
 }

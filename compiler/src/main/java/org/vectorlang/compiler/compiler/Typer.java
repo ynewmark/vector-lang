@@ -18,6 +18,7 @@ import org.vectorlang.compiler.ast.LiteralExpression;
 import org.vectorlang.compiler.ast.Node;
 import org.vectorlang.compiler.ast.PrintStatement;
 import org.vectorlang.compiler.ast.Statement;
+import org.vectorlang.compiler.ast.StaticExpression;
 import org.vectorlang.compiler.ast.UnaryExpression;
 import org.vectorlang.compiler.ast.UnaryOperator;
 import org.vectorlang.compiler.ast.VectorExpression;
@@ -220,5 +221,10 @@ public class Typer implements Visitor<TyperState, Node> {
         }
         Statement body = (Statement) node.getBody().visitStatement(this, state);
         return new ForStatement(condition, initial, each, body, 0, 0);
+    }
+
+    @Override
+    public Node visitStaticExpr(StaticExpression expression, TyperState arg) {
+        return expression;
     }
 }

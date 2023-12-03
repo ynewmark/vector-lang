@@ -12,6 +12,12 @@ A vector based programming language
 2. Run `java -jar build/compiler.jar {path/to/source.vec} {path/to/compile/to}` (replace with real paths)
 3. Run `build/vm {path/to/binary}` (where path/to/binary is the path previously compiled to)
 
+## Optimizations
+In order to do basic optimizations, run `java -jar build/compiler.jar {path/to/source.vec} {path/to/compile/to} -o`
+These include
+- replace operations on literals with result
+- place literal vector in static memory
+
 ## Features
 - C-Style Syntax
 - Variables

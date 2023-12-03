@@ -7,7 +7,7 @@
 #include "consts.h"
 #include "opcode.h"
 
-unsigned long *program;
+unsigned long *instr_p, *static_p;
 int counter;
 
 int get_operand(void **pointer) {
@@ -23,7 +23,7 @@ int get_operand(void **pointer) {
 }
 
 void step() {
-    unsigned long instr = program[counter++];
+    unsigned long instr = instr_p[counter++];
     if (instr < 24) {
         void *operand1, *operand2, *destination;
         int size;
@@ -57,7 +57,7 @@ void step() {
     } else if (instr == OP_CONCAT) {
         stack_concat();
     } else {
-        unsigned long arg = program[counter++];
+        unsigned long arg = instr_p[counter++];
         if (instr == OP_JMP) {
             counter = arg;
         } else if (instr == OP_JIF) {
@@ -120,15 +120,23 @@ void step() {
                 }
             }
             printf("\n");
+        } else if (instr == OP_LOADS) {
+            union StackItem item;
+            item.pointer = arg + static_p + 1;
+            stack_push(item);
+            item.data.flag = 1;
+            item.data.size = *(arg + static_p);
+            stack_push(item);
         }
     }
 }
 
-void execute(unsigned long *chunk, int size) {
+void execute(unsigned long *stat, unsigned long *instructions, int size) {
     init_stack(100);
     init_heap(10);
     counter = 0;
-    program = chunk;
+    static_p = stat;
+    instr_p = instructions;
     while (counter < size) {
         step();
         if (DEBUG_MODE) {

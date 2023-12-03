@@ -12,6 +12,7 @@ import org.vectorlang.compiler.ast.BlockStatement;
 import org.vectorlang.compiler.ast.Node;
 import org.vectorlang.compiler.compiler.Chunk;
 import org.vectorlang.compiler.compiler.Compiler;
+import org.vectorlang.compiler.compiler.Pruner;
 import org.vectorlang.compiler.compiler.TypeFailure;
 import org.vectorlang.compiler.compiler.Typer;
 import org.vectorlang.compiler.compiler.TyperState;
@@ -57,6 +58,7 @@ public class App {
             return;
         }
         Typer typer = new Typer();
+        Pruner pruner = new Pruner();
         org.vectorlang.compiler.compiler.Compiler compiler = new Compiler();
         Node typed = block.accept(typer, new TyperState());
         if (!typer.getFailures().isEmpty()) {
@@ -66,19 +68,30 @@ public class App {
             }
             System.exit(1);
         }
+        if (shouldOptimize(args)) {
+            System.out.println("Optimizing...");
+            typed = typed.accept(pruner, null);
+        }
         Chunk chunk = compiler.compile(typed);
         System.out.println("[Program]");
         System.out.println(chunk);
-        if (args.length == 2) {
+        if (args.length == 2 || args.length == 3) {
             File destination = new File(args[1]);
             try {
                 FileOutputStream stream = new FileOutputStream(destination);
-                stream.write(chunk.getBytes());
+                stream.write(chunk.assemble());
                 stream.close();
             } catch (IOException e) {
                 System.err.println("Cannot write to file " + destination);
                 System.exit(1);
             }
         }
+    }
+
+    private static boolean shouldOptimize(String[] args) {
+        if (args.length < 3) {
+            return false;
+        }
+        return args[2].equals("-o");
     }
 }

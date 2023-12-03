@@ -8,4 +8,5 @@ public interface ExpressionVisitor<T, R> {
     public R visitUnaryExpr(UnaryExpression expression, T arg);
     public R visitVectorExpr(VectorExpression expression, T arg);
     public R visitIndexExpr(IndexExpression expression, T arg);
+    public R visitStaticExpr(StaticExpression expression, T arg);
 }

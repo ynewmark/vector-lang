@@ -13,6 +13,7 @@ int main(int argc, char **argv) {
         printf("Couldn't read file\n");
         exit(1);
     }
+    void *static_p, *instr_p;
     fseek(fp, 0L, SEEK_END);
     long size = ftell(fp);
     fseek(fp, 0L, SEEK_SET);
@@ -20,5 +21,7 @@ int main(int argc, char **argv) {
     int program_size = size / sizeof(long);
     fread(program, sizeof(long), program_size, fp);
     fclose(fp);
-    execute(program, program_size);
+    static_p = program + program[1];
+    instr_p = program + program[2];
+    execute(static_p, instr_p, program_size - (unsigned long) program[2]);
 }

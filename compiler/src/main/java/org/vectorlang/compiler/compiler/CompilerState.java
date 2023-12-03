@@ -6,14 +6,15 @@ import java.util.Map;
 public class CompilerState {
     private Map<String, Integer> ids;
     private int currentId;
-    private Counter labelCounter;
+    private Counter labelCounter, staticCounter;
     private CompilerState previous;
 
-    public CompilerState(CompilerState previous, Counter labelCounter) {
+    public CompilerState(CompilerState previous, Counter labelCounter, Counter statiCounter) {
         this.previous = previous;
         this.ids = new HashMap<>();
         this.currentId = previous != null ? previous.currentId : 0;
         this.labelCounter = labelCounter;
+        this.staticCounter = statiCounter;
     }
 
     public int get(String name) {
@@ -32,5 +33,9 @@ public class CompilerState {
 
     public int addLabel() {
         return labelCounter.getAndIncrement();
+    }
+
+    public int addStatic() {
+        return staticCounter.getAndIncrement();
     }
 }
