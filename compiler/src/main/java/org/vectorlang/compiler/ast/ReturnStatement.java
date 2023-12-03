@@ -15,7 +15,6 @@ public class ReturnStatement extends Statement {
 
     @Override
     public <T, R> R visitStatement(StatementVisitor<T, R> visitor, T arg) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'visitExpression'");
+        return visitor.visitReturnStmt(this, arg);
     }
 }

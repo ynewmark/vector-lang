@@ -9,4 +9,5 @@ public interface ExpressionVisitor<T, R> {
     public R visitVectorExpr(VectorExpression expression, T arg);
     public R visitIndexExpr(IndexExpression expression, T arg);
     public R visitStaticExpr(StaticExpression expression, T arg);
+    public R visitCallExpression(CallExpression expression, T arg);
 }

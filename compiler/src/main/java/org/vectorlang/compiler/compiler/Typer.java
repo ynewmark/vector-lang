@@ -7,9 +7,11 @@ import org.vectorlang.compiler.ast.AssignStatement;
 import org.vectorlang.compiler.ast.BinaryExpression;
 import org.vectorlang.compiler.ast.BinaryOperator;
 import org.vectorlang.compiler.ast.BlockStatement;
+import org.vectorlang.compiler.ast.CallExpression;
 import org.vectorlang.compiler.ast.DeclareStatement;
 import org.vectorlang.compiler.ast.Expression;
 import org.vectorlang.compiler.ast.ForStatement;
+import org.vectorlang.compiler.ast.FunctionStatement;
 import org.vectorlang.compiler.ast.GroupingExpression;
 import org.vectorlang.compiler.ast.IdentifierExpression;
 import org.vectorlang.compiler.ast.IfStatement;
@@ -17,6 +19,7 @@ import org.vectorlang.compiler.ast.IndexExpression;
 import org.vectorlang.compiler.ast.LiteralExpression;
 import org.vectorlang.compiler.ast.Node;
 import org.vectorlang.compiler.ast.PrintStatement;
+import org.vectorlang.compiler.ast.ReturnStatement;
 import org.vectorlang.compiler.ast.Statement;
 import org.vectorlang.compiler.ast.StaticExpression;
 import org.vectorlang.compiler.ast.UnaryExpression;
@@ -226,5 +229,78 @@ public class Typer implements Visitor<TyperState, Node> {
     @Override
     public Node visitStaticExpr(StaticExpression expression, TyperState arg) {
         return expression;
+    }
+
+    @Override
+    public Node visitCallExpression(CallExpression expression, TyperState arg) {
+        Expression[] args = new Expression[expression.getArgs().length];
+        for (int i = 0; i < args.length; i++) {
+            args[i] = (Expression) expression.getArgs()[i].visitExpression(this, arg);
+        }
+        FuncType funcType = arg.getFunc(expression.getName());
+        if (funcType == null) {
+            failures.add(new TypeFailure(null, null,
+                "function " + expression.getName() + " not found")
+            );
+            return new CallExpression(expression.getName(), args, null, 0, 0);
+        }
+        if (funcType.argTypes().length != args.length) {
+            failures.add(new TypeFailure(null, null, expression.getName() + " wrong number of arguments"));
+        } else {
+            for (int i = 0; i < args.length; i++) {
+                if (!args[i].getType().equals(funcType.argTypes()[i])) {
+                    failures.add(
+                        new TypeFailure(funcType.argTypes()[i], args[i].getType(), "mismatched argument")
+                    );
+                }
+            }
+        }
+        return new CallExpression(expression.getName(), args, funcType.returnType(), 0, 0);
+    }
+
+    @Override
+    public Node visitFunctionStmt(FunctionStatement node, TyperState arg) {
+        arg.putFunc(node.getName(), node.getParameterTypes(), node.getReturnType());
+        TyperState state = new TyperState(arg);
+        for (int i = 0; i < node.getParameterNames().length; i++) {
+            state.put(node.getParameterNames()[i], node.getParameterTypes()[i]);
+        }
+        Statement[] statements = new Statement[node.getBody().length];
+        for (int i = 0; i < statements.length; i++) {
+            statements[i] = (Statement) node.getBody()[i].visitStatement(this, state);
+        }
+        if (!returnCheck(statements, node.getReturnType())) {
+            failures.add(new TypeFailure(null, null, "function " + node.getName() + " does not return in all cases"));
+        }
+        return new FunctionStatement(
+            node.getName(), node.getParameterNames(), node.getParameterTypes(), statements,
+            node.getReturnType(), 0, 0
+        );
+    }
+
+    @Override
+    public Node visitReturnStmt(ReturnStatement node, TyperState arg) {
+        Expression expression = (Expression) node.getExpression().visitExpression(this, arg);
+        return new ReturnStatement(expression, 0, 0);
+    }
+
+    private boolean returnCheck(Statement[] statements, Type returnType) {
+        if (statements[statements.length - 1] instanceof ReturnStatement) {
+            return ((ReturnStatement) statements[statements.length - 1]).getExpression().getType().equals(returnType);
+        } else if (statements[statements.length - 1] instanceof IfStatement) {
+            IfStatement ifStatement = (IfStatement) statements[statements.length - 1];
+            return returnCheck(rollout(ifStatement.getIfStatement()), returnType)
+                && returnCheck(rollout(ifStatement.getElseStatement()), returnType);
+        } else {
+            return false;
+        }
+    }
+
+    private Statement[] rollout(Statement statement) {
+        if (statement instanceof BlockStatement) {
+            return ((BlockStatement) statement).getStatements();
+        } else {
+            return new Statement[]{statement};
+        }
     }
 }

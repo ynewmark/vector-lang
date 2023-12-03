@@ -23,8 +23,7 @@ public class CallExpression extends Expression {
     
     @Override
     public <T, R> R visitExpression(ExpressionVisitor<T, R> visitor, T arg) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'visitExpression'");
+        return visitor.visitCallExpression(this, arg);
     }
     
 }
