@@ -7,15 +7,18 @@ import org.vectorlang.compiler.ast.AssignStatement;
 import org.vectorlang.compiler.ast.BinaryExpression;
 import org.vectorlang.compiler.ast.BinaryOperator;
 import org.vectorlang.compiler.ast.BlockStatement;
+import org.vectorlang.compiler.ast.CallExpression;
 import org.vectorlang.compiler.ast.DeclareStatement;
 import org.vectorlang.compiler.ast.Expression;
 import org.vectorlang.compiler.ast.ForStatement;
+import org.vectorlang.compiler.ast.FunctionStatement;
 import org.vectorlang.compiler.ast.GroupingExpression;
 import org.vectorlang.compiler.ast.IdentifierExpression;
 import org.vectorlang.compiler.ast.IfStatement;
 import org.vectorlang.compiler.ast.IndexExpression;
 import org.vectorlang.compiler.ast.LiteralExpression;
 import org.vectorlang.compiler.ast.PrintStatement;
+import org.vectorlang.compiler.ast.ReturnStatement;
 import org.vectorlang.compiler.ast.Statement;
 import org.vectorlang.compiler.ast.UnaryExpression;
 import org.vectorlang.compiler.ast.UnaryOperator;
@@ -82,6 +85,12 @@ public class Parser {
             return whileStatement();
         } else if (peek().type() == TokenType.FOR) {
             return forStatement();
+        } else if (peek().type() == TokenType.FUNC) {
+            return functionStatement();
+        } else if (matches(TokenType.RETURN)) {
+            Expression expression = expression();
+            consume(TokenType.SEMICOLON, null);
+            return new ReturnStatement(expression, 0, 0);
         } else {
             throw new ParseException(null, 0);
         }
@@ -128,6 +137,38 @@ public class Parser {
             consume(TokenType.SEMICOLON, null);
         }
         return new AssignStatement(name, expression, 0, 0);
+    }
+
+    private FunctionStatement functionStatement() throws ParseException {
+        List<String> names = new ArrayList<>();
+        List<Type> types = new ArrayList<>();
+        List<Statement> statements = new ArrayList<>();
+        consume(TokenType.FUNC, null);
+        consume(TokenType.IDENTIFIER, null);
+        String name = previous().value();
+        consume(TokenType.OPEN_PAREN, null);
+        boolean flag = false;
+        while (!matches(TokenType.CLOSE_PAREN)) {
+            if (flag) {
+                consume(TokenType.COMMA, name);
+            }
+            consume(TokenType.IDENTIFIER, null);
+            names.add(previous().value());
+            types.add(type());
+            flag = true;
+        }
+        Type type = null;
+        if (peek().type() == TokenType.COLON) {
+            type = type();
+        }
+        consume(TokenType.OPEN_BRACKET, null);
+        while (!matches(TokenType.CLOSE_BRACKET)) {
+            statements.add(statement());
+        }
+        return new FunctionStatement(
+            name, names.toArray(new String[0]), types.toArray(new Type[0]),
+            statements.toArray(new Statement[0]), type, 0, 0
+        );
     }
 
     private WhileStatement whileStatement() throws ParseException {
@@ -268,9 +309,23 @@ public class Parser {
         return new GroupingExpression(expression, 0, 0);
     }
 
-    private IdentifierExpression identifierExpression() throws ParseException {
+    private Expression identifierExpression() throws ParseException {
         consume(TokenType.IDENTIFIER, null);
         String name = previous().value();
+        if (matches(TokenType.OPEN_PAREN)) {
+            boolean flag = false;
+            List<Expression> expressions = new ArrayList<>();
+            while (!matches(TokenType.CLOSE_PAREN)) {
+                if (flag) {
+                    consume(TokenType.COMMA, null);
+                }
+                expressions.add(expression());
+                flag = true;
+            }
+            return new CallExpression(
+                name, expressions.toArray(new Expression[0]), null, 0, 0
+            );
+        }
         return new IdentifierExpression(name, 0, 0);
     }
 
