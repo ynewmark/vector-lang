@@ -150,7 +150,7 @@ public class Parser {
         boolean flag = false;
         while (!matches(TokenType.CLOSE_PAREN)) {
             if (flag) {
-                consume(TokenType.COMMA, name);
+                consume(TokenType.COMMA, null);
             }
             consume(TokenType.IDENTIFIER, null);
             names.add(previous().value());
@@ -161,8 +161,8 @@ public class Parser {
         if (peek().type() == TokenType.COLON) {
             type = type();
         }
-        consume(TokenType.OPEN_BRACKET, null);
-        while (!matches(TokenType.CLOSE_BRACKET)) {
+        consume(TokenType.OPEN_BRACE, null);
+        while (!matches(TokenType.CLOSE_BRACE)) {
             statements.add(statement());
         }
         return new FunctionStatement(

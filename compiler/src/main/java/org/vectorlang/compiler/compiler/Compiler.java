@@ -1,12 +1,17 @@
 package org.vectorlang.compiler.compiler;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.vectorlang.compiler.ast.AssignStatement;
 import org.vectorlang.compiler.ast.BinaryExpression;
 import org.vectorlang.compiler.ast.BinaryOperator;
 import org.vectorlang.compiler.ast.BlockStatement;
+import org.vectorlang.compiler.ast.CallExpression;
 import org.vectorlang.compiler.ast.DeclareStatement;
 import org.vectorlang.compiler.ast.Expression;
 import org.vectorlang.compiler.ast.ForStatement;
+import org.vectorlang.compiler.ast.FunctionStatement;
 import org.vectorlang.compiler.ast.GroupingExpression;
 import org.vectorlang.compiler.ast.IdentifierExpression;
 import org.vectorlang.compiler.ast.IfStatement;
@@ -14,6 +19,7 @@ import org.vectorlang.compiler.ast.IndexExpression;
 import org.vectorlang.compiler.ast.LiteralExpression;
 import org.vectorlang.compiler.ast.Node;
 import org.vectorlang.compiler.ast.PrintStatement;
+import org.vectorlang.compiler.ast.ReturnStatement;
 import org.vectorlang.compiler.ast.Statement;
 import org.vectorlang.compiler.ast.StaticExpression;
 import org.vectorlang.compiler.ast.UnaryExpression;
@@ -27,7 +33,9 @@ public class Compiler implements Visitor<CompilerState, Chunk> {
     private static UnaryTable<OpCode> unaryTable;
     private static BinaryTable<OpCode> binaryTable;
 
-    private Counter labelCounter, staticCounter;
+    private Counter labelCounter, staticCounter, chunkCounter;
+    private String name;
+    private List<Chunk> funcChunks;
 
     static {
         unaryTable = new UnaryTable<>();
@@ -61,13 +69,23 @@ public class Compiler implements Visitor<CompilerState, Chunk> {
         binaryTable.put(BaseType.BOOL, BaseType.BOOL, BinaryOperator.NOT_EQUAL, OpCode.B_NEQ);
     }
 
-    public Compiler() {
-        labelCounter = new Counter();
-        staticCounter = new Counter();
+    public Compiler(String name) {
+        this.labelCounter = new Counter();
+        this.staticCounter = new Counter();
+        this.chunkCounter = new Counter();
+        this.name = name;
+        this.funcChunks = new ArrayList<>();
     }
 
-    public Chunk compile(Node node) {
-        return node.accept(this, new CompilerState(null, labelCounter, staticCounter)).link();
+    public Compiler() {
+        this("(main)");
+    }
+
+    public List<Chunk> compile(Node node) {
+        Chunk main = node.accept(this, new CompilerState(null, labelCounter, staticCounter, chunkCounter));
+        List<Chunk> chunks = new ArrayList<>(funcChunks);
+        chunks.add(main);
+        return chunks;
     }
 
     @Override
@@ -87,12 +105,16 @@ public class Compiler implements Visitor<CompilerState, Chunk> {
 
     @Override
     public Chunk visitIdentifierExpr(IdentifierExpression expression, CompilerState arg) {
-        return new Chunk(new long[]{OpCode.LOAD.ordinal(), arg.get(expression.getName())});
+        if (arg.isParameter(expression.getName())) {
+            return new Chunk(name, new long[]{OpCode.ARG.ordinal(), arg.get(expression.getName())});
+        } else {
+            return new Chunk(name, new long[]{OpCode.LOAD.ordinal(), arg.get(expression.getName())});
+        }
     }
 
     @Override
     public Chunk visitLiteralExpr(LiteralExpression expression, CompilerState arg) {
-        return new Chunk(new long[]{
+        return new Chunk(name, new long[]{
             OpCode.PUSHI.ordinal(), expression.getRaw()
         });
     }
@@ -108,7 +130,7 @@ public class Compiler implements Visitor<CompilerState, Chunk> {
     @Override
     public Chunk visitVectorExpr(VectorExpression expression, CompilerState arg) {
         boolean flag = false;
-        Chunk chunk = new Chunk(new long[0]);
+        Chunk chunk = new Chunk(name, new long[0]);
         for (Expression element : expression.getExpressions()) {
             chunk = chunk.concat(element.visitExpression(this, arg));
             if (flag) {
@@ -138,8 +160,8 @@ public class Compiler implements Visitor<CompilerState, Chunk> {
 
     @Override
     public Chunk visitBlockStmt(BlockStatement node, CompilerState arg) {
-        CompilerState state = new CompilerState(arg, labelCounter, staticCounter);
-        Chunk chunk = new Chunk(new long[0]);
+        CompilerState state = new CompilerState(arg, labelCounter, staticCounter, chunkCounter);
+        Chunk chunk = new Chunk(name, new long[0]);
         for (Statement statement : node.getStatements()) {
             chunk = chunk.concat(statement.visitStatement(this, state));
         }
@@ -148,7 +170,7 @@ public class Compiler implements Visitor<CompilerState, Chunk> {
 
     @Override
     public Chunk visitDeclareStmt(DeclareStatement node, CompilerState arg) {
-        Chunk chunk = new Chunk(new long[0]);
+        Chunk chunk = new Chunk(name, new long[0]);
         if (node.getInitial() != null) {
             chunk = node.getInitial().visitExpression(this, arg);
         }
@@ -175,17 +197,17 @@ public class Compiler implements Visitor<CompilerState, Chunk> {
     public Chunk visitIfStmt(IfStatement node, CompilerState arg) {
         Chunk ifChunk = node.getIfStatement().visitStatement(this, arg);
         int elseLength = 0;
-        Chunk elseChunk = new Chunk(new long[0]);
+        Chunk elseChunk = new Chunk(name, new long[0]);
         if (node.getElseStatement() != null) {
             elseChunk = node.getElseStatement().visitStatement(this, arg);
-            elseLength = elseChunk.length();
+            elseLength = elseChunk.getInstrSize();
         }
         Chunk chunk = node.getCondition().visitExpression(this, arg).concat(new long[]{
             OpCode.JIF.ordinal(), arg.addLabel()
         }, new long[]{2 + elseLength + 2});
         chunk = chunk.concat(elseChunk).concat(new long[]{
             OpCode.JMP.ordinal(), arg.addLabel()
-        }, new long[]{2 + ifChunk.length()});
+        }, new long[]{2 + ifChunk.getInstrSize()});
         chunk = chunk.concat(ifChunk);
         return chunk;
     }
@@ -193,13 +215,13 @@ public class Compiler implements Visitor<CompilerState, Chunk> {
     @Override
     public Chunk visitWhileStmt(WhileStatement node, CompilerState arg) {
         Chunk bodyChunk = node.getBody().visitStatement(this, arg);
-        Chunk chunk = new Chunk(new long[]{
+        Chunk chunk = new Chunk(name, new long[]{
             OpCode.JMP.ordinal(), arg.addLabel()
-        }, new long[]{2 + bodyChunk.length()}).concat(bodyChunk);
+        }, new long[]{2 + bodyChunk.getInstrSize()}).concat(bodyChunk);
         Chunk condChunk = node.getCondition().visitExpression(this, arg);
         chunk = chunk.concat(condChunk).concat(new long[]{
             OpCode.JIF.ordinal(), arg.addLabel()
-        }, new long[]{-(condChunk.length() + bodyChunk.length())});
+        }, new long[]{-(condChunk.getInstrSize() + bodyChunk.getInstrSize())});
         return chunk;
     }
 
@@ -211,19 +233,49 @@ public class Compiler implements Visitor<CompilerState, Chunk> {
         );
         chunk = chunk.concat(new long[]{
             OpCode.JMP.ordinal(), arg.addLabel()
-        }, new long[]{2 + bodyChunk.length()}).concat(bodyChunk);
+        }, new long[]{2 + bodyChunk.getInstrSize()}).concat(bodyChunk);
         Chunk condChunk = node.getCondition().visitExpression(this, arg);
         chunk = chunk.concat(condChunk).concat(new long[]{
             OpCode.JIF.ordinal(), arg.addLabel()
-        }, new long[]{-(condChunk.length() + bodyChunk.length())});
+        }, new long[]{-(condChunk.getInstrSize() + bodyChunk.getInstrSize())});
         return chunk;
     }
 
     @Override
     public Chunk visitStaticExpr(StaticExpression expression, CompilerState arg) {
-        return new Chunk(new long[]{
+        return new Chunk(name, new long[]{
             OpCode.LOADS.ordinal(), staticCounter.getAndIncrement()
         }, new long[0], new long[][]{expression.getData()});
+    }
+
+    @Override
+    public Chunk visitCallExpression(CallExpression expression, CompilerState arg) {
+        Chunk chunk = new Chunk(name, new long[0]);
+        for (Expression argument : expression.getArgs()) {
+            chunk = chunk.concat(argument.visitExpression(this, arg));
+        }
+        return chunk.concat(new long[]{OpCode.CALL.ordinal(), arg.getFunction(expression.getName())});
+    }
+
+    @Override
+    public Chunk visitFunctionStmt(FunctionStatement node, CompilerState arg) {
+        CompilerState state = new CompilerState(null, new Counter(), staticCounter, chunkCounter);
+        for (String paramName : node.getParameterNames()) {
+            state.putParameter(paramName);
+        }
+        BlockStatement block = new BlockStatement(node.getBody(), 0, 0);
+        Compiler subCompiler = new Compiler(node.getName());
+        Chunk chunk = block.accept(subCompiler, state);
+        funcChunks.addAll(subCompiler.funcChunks);
+        funcChunks.add(chunk);
+        arg.addFunction(node.getName());
+        return new Chunk(name);
+    }
+
+    @Override
+    public Chunk visitReturnStmt(ReturnStatement node, CompilerState arg) {
+        Chunk chunk = node.getExpression().visitExpression(this, arg);
+        return chunk.concat(new long[]{OpCode.RET.ordinal()});
     }
     
 }

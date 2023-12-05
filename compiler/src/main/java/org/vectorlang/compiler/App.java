@@ -12,6 +12,7 @@ import org.vectorlang.compiler.ast.BlockStatement;
 import org.vectorlang.compiler.ast.Node;
 import org.vectorlang.compiler.compiler.Chunk;
 import org.vectorlang.compiler.compiler.Compiler;
+import org.vectorlang.compiler.compiler.Linker;
 import org.vectorlang.compiler.compiler.Pruner;
 import org.vectorlang.compiler.compiler.TypeFailure;
 import org.vectorlang.compiler.compiler.Typer;
@@ -72,14 +73,14 @@ public class App {
             System.out.println("Optimizing...");
             typed = typed.accept(pruner, null);
         }
-        Chunk chunk = compiler.compile(typed);
-        System.out.println("[Program]");
-        System.out.println(chunk);
+        List<Chunk> chunks = compiler.compile(typed);
+        Linker linker = new Linker();
+        byte[] data = linker.link(chunks);
         if (args.length == 2 || args.length == 3) {
             File destination = new File(args[1]);
             try {
                 FileOutputStream stream = new FileOutputStream(destination);
-                stream.write(chunk.assemble());
+                stream.write(data);
                 stream.close();
             } catch (IOException e) {
                 System.err.println("Cannot write to file " + destination);
