@@ -82,7 +82,7 @@ public class Compiler implements Visitor<CompilerState, Chunk> {
     }
 
     public List<Chunk> compile(Node node) {
-        Chunk main = node.accept(this, new CompilerState(null, labelCounter, staticCounter, chunkCounter));
+        Chunk main = node.accept(this, new CompilerState(null, labelCounter, staticCounter, chunkCounter, false));
         List<Chunk> chunks = new ArrayList<>(funcChunks);
         chunks.add(main);
         return chunks;
@@ -160,7 +160,7 @@ public class Compiler implements Visitor<CompilerState, Chunk> {
 
     @Override
     public Chunk visitBlockStmt(BlockStatement node, CompilerState arg) {
-        CompilerState state = new CompilerState(arg, labelCounter, staticCounter, chunkCounter);
+        CompilerState state = new CompilerState(arg, labelCounter, staticCounter, chunkCounter, false);
         Chunk chunk = new Chunk(name, new long[0]);
         for (Statement statement : node.getStatements()) {
             chunk = chunk.concat(statement.visitStatement(this, state));
@@ -259,16 +259,17 @@ public class Compiler implements Visitor<CompilerState, Chunk> {
 
     @Override
     public Chunk visitFunctionStmt(FunctionStatement node, CompilerState arg) {
-        CompilerState state = new CompilerState(null, new Counter(), staticCounter, chunkCounter);
+        arg.addFunction(node.getName());
+        CompilerState state = new CompilerState(arg, new Counter(), staticCounter, chunkCounter, true);
         for (String paramName : node.getParameterNames()) {
             state.putParameter(paramName);
         }
+        
         BlockStatement block = new BlockStatement(node.getBody(), 0, 0);
         Compiler subCompiler = new Compiler(node.getName());
         Chunk chunk = block.accept(subCompiler, state);
         funcChunks.addAll(subCompiler.funcChunks);
         funcChunks.add(chunk);
-        arg.addFunction(node.getName());
         return new Chunk(name);
     }
 

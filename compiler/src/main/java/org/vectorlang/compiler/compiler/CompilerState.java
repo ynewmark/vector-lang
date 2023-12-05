@@ -9,15 +9,16 @@ public class CompilerState {
     private Map<String, Integer> ids, functionIds;
     private Set<String> parameters;
     private int currentId, parameterId;
+    private boolean isNew;
     private Counter labelCounter, staticCounter, funcCounter;
     private CompilerState previous;
 
-    public CompilerState(CompilerState previous, Counter labelCounter, Counter staticCounter, Counter funcCounter) {
+    public CompilerState(CompilerState previous, Counter labelCounter, Counter staticCounter, Counter funcCounter, boolean isNew) {
         this.previous = previous;
         this.ids = new HashMap<>();
         this.functionIds = new HashMap<>();
-        this.currentId = previous != null ? previous.currentId : 0;
-        this.parameterId = previous != null ? previous.parameterId : 0;
+        this.currentId = (previous != null && !isNew) ? previous.currentId : 0;
+        this.parameterId = (previous != null && !isNew) ? previous.parameterId : 0;
         this.labelCounter = labelCounter;
         this.staticCounter = staticCounter;
         this.funcCounter = funcCounter;
@@ -27,7 +28,7 @@ public class CompilerState {
     public int get(String name) {
         if (ids.containsKey(name)) {
             return ids.get(name);
-        } else if (previous != null) {
+        } else if (previous != null && !isNew) {
             return previous.get(name);
         } else {
             return -1;
