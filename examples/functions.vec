@@ -1,0 +1,32 @@
+func fib(n: int): int {
+    if (n <= 1) {
+        return 1;
+    } else {
+        return fib(n - 1) + fib(n - 2);
+    }
+}
+
+func dot(a: int[2], b: int[2]): int {
+    let sum = [a[0] * b[0], a[1] * b[1]];
+    return sum[0] + sum[1];
+}
+
+func sum_prod(input: int[3]): int[2] {
+    let sum = 0;
+    let prod = 1;
+    for (let i = 0; i < 3; i++) {
+        sum += input[i];
+        prod *= input[i];
+    }
+    return [sum, prod];
+}
+
+for (let i = 0; i < 5; i++) {
+    print sum_prod([i, i * 2, i + 1]);
+}
+
+print dot([25, 13], [12, 4]);
+
+for (let i = 0; i < 10; i++) {
+    print fib(i);
+}
