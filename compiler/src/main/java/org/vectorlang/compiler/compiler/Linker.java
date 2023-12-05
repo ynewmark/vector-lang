@@ -9,7 +9,6 @@ import java.util.Map;
 public class Linker {
     
     public byte[] link(List<Chunk> chunks) {
-        System.out.println(chunks);
         Map<String, long[]> staticPositions = new HashMap<>();
         long[] functionPositions = new long[chunks.size()];
         int staticSize = 0, instrSize = 0;

@@ -57,8 +57,6 @@ public class CompilerState {
     }
 
     public void addFunction(String name) {
-        System.out.print(name.length() + " put ");
-        System.out.println(name);
         this.functionIds.put(name, funcCounter.getAndIncrement());
     }
 
