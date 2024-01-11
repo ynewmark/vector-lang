@@ -8,17 +8,14 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.List;
 
-import org.vectorlang.compiler.ast.BlockStatement;
-import org.vectorlang.compiler.ast.Node;
+import org.vectorlang.compiler.ast.CodeBase;
 import org.vectorlang.compiler.compiler.Chunk;
 import org.vectorlang.compiler.compiler.Compiler;
 import org.vectorlang.compiler.compiler.Linker;
 import org.vectorlang.compiler.compiler.Pruner;
 import org.vectorlang.compiler.compiler.TypeFailure;
 import org.vectorlang.compiler.compiler.Typer;
-import org.vectorlang.compiler.compiler.TyperState;
 import org.vectorlang.compiler.parser.Lexer;
-import org.vectorlang.compiler.parser.ParseException;
 import org.vectorlang.compiler.parser.Parser;
 import org.vectorlang.compiler.parser.Token;
 
@@ -48,20 +45,12 @@ public class App {
         String code = builder.toString();
         Lexer lexer = new Lexer(code);
         List<Token> tokens = lexer.lex();
-        Parser parser = new Parser(tokens);
-        BlockStatement block;
-        try {
-            block = parser.parse();
-        } catch (ParseException e) {
-            e.printStackTrace();
-            System.err.println("There was a parse error");
-            System.exit(1);
-            return;
-        }
+        Parser parser = new Parser();
+        CodeBase codeBase = parser.parse(tokens);
         Typer typer = new Typer();
         Pruner pruner = new Pruner();
         org.vectorlang.compiler.compiler.Compiler compiler = new Compiler();
-        Node typed = block.accept(typer, new TyperState());
+        CodeBase typed = typer.type(codeBase);
         if (!typer.getFailures().isEmpty()) {
             System.err.println("There were the following type failures:");
             for (TypeFailure failure : typer.getFailures()) {
@@ -71,9 +60,9 @@ public class App {
         }
         if (shouldOptimize(args)) {
             System.out.println("Optimizing...");
-            typed = typed.accept(pruner, null);
+            typed = pruner.prune(typed);
         }
-        List<Chunk> chunks = compiler.compile(typed);
+        Chunk[] chunks = compiler.compile(typed);
         Linker linker = new Linker();
         byte[] data = linker.link(chunks);
         if (args.length == 2 || args.length == 3) {

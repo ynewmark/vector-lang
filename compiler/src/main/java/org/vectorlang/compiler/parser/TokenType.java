@@ -9,8 +9,8 @@ public enum TokenType {
     WHILE, FUNC, IF, ELSE, FOR, RETURN, COLON, COMMA, LET, CONST, PRINT,
     EQUALS, EQUALS_EQUALS, LEFT_ARROW_EQUALS, LEFT_ARROW, RIGHT_ARROW_EQUALS, RIGHT_ARROW, BANG,
     BANG_EQUALS, DASH, SLASH, STAR, PLUS, AMPERSAND, BAR, DOT_PLUS, DOT_DASH, DOT_SLASH, DOT_STAR,
-    PLUS_PLUS, MINUS_MINUS, PLUS_EQUALs, MINUS_EQUALS, STAR_EQUALS, SLASH_EQUALS,
-    BAR_EQUALS, AMPERSAND_EQUALS;
+    PLUS_PLUS, MINUS_MINUS, PLUS_EQUALs, MINUS_EQUALS, STAR_EQUALS, SLASH_EQUALS, DOT_DOT,
+    BAR_EQUALS, AMPERSAND_EQUALS, IMPORT, EXTERN;
 
     private final static TokenType[] SINGLES;
     private final static TokenType[][] DOUBLES;
@@ -64,6 +64,7 @@ public enum TokenType {
         DOUBLES['.']['-'] = DOT_DASH;
         DOUBLES['.']['/'] = DOT_SLASH;
         DOUBLES['.']['*'] = DOT_STAR;
+        DOUBLES['.']['.'] = DOT_DOT;
         DOUBLES['='] = new TokenType[256];
         DOUBLES['=']['='] = EQUALS_EQUALS;
         DOUBLES['+'] = new TokenType[256];
@@ -92,5 +93,7 @@ public enum TokenType {
         KEYWORDS.put("let", LET);
         KEYWORDS.put("const", CONST);
         KEYWORDS.put("print", PRINT);
+        KEYWORDS.put("import", IMPORT);
+        KEYWORDS.put("extern", EXTERN);
     }
 }

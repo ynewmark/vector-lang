@@ -4,8 +4,8 @@ public class ReturnStatement extends Statement {
     
     private final Expression expression;
 
-    public ReturnStatement(Expression expression, int length, int position) {
-        super(length, position);
+    public ReturnStatement(Expression expression) {
+        super();
         this.expression = expression;
     }
 

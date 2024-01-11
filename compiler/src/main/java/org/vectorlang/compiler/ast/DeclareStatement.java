@@ -9,16 +9,16 @@ public class DeclareStatement extends Statement {
     private final Expression initial;
     private final Type type;
 
-    public DeclareStatement(boolean constant, String name, Expression initial, Type type, int length, int position) {
-        super(length, position);
+    public DeclareStatement(boolean constant, String name, Expression initial, Type type) {
+        super();
         this.constant = constant;
         this.name = name;
         this.initial = initial;
         this.type = type;
     }
 
-    public DeclareStatement(boolean constant, String name, Expression initial, int length, int position) {
-        this(constant, name, initial, null, length, position);
+    public DeclareStatement(boolean constant, String name, Expression initial) {
+        this(constant, name, initial, null);
     }
 
     public boolean isConst() {

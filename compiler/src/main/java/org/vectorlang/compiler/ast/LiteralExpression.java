@@ -1,7 +1,6 @@
 package org.vectorlang.compiler.ast;
 
 import org.vectorlang.compiler.compiler.BaseType;
-import org.vectorlang.compiler.compiler.Shape;
 import org.vectorlang.compiler.compiler.Type;
 
 public class LiteralExpression extends Expression {
@@ -11,24 +10,24 @@ public class LiteralExpression extends Expression {
     private final double floatValue;
     private final int type;
 
-    public LiteralExpression(int value, int length, int position) {
-        super(new Type(new Shape(BaseType.INT, new int[0]), true), length, position);
+    public LiteralExpression(int value) {
+        super(new Type(BaseType.INT, new int[0], true));
         this.intValue = value;
         this.boolValue = false;
         this.floatValue = 0;
         type = 0;
     }
 
-    public LiteralExpression(boolean value, int length, int position) {
-        super(new Type(new Shape(BaseType.BOOL, new int[0]), true), length, position);
+    public LiteralExpression(boolean value) {
+        super(new Type(BaseType.BOOL, new int[0], true));
         this.intValue = 0;
         this.boolValue = value;
         this.floatValue = 0;
         type = 1;
     }
 
-    public LiteralExpression(double value, int length, int position) {
-        super(new Type(new Shape(BaseType.FLOAT, new int[0]), true), length, position);
+    public LiteralExpression(double value) {
+        super(new Type(BaseType.FLOAT, new int[0], true));
         this.intValue = 0;
         this.boolValue = false;
         this.floatValue = value;

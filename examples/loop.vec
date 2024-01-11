@@ -1,10 +1,12 @@
-for (let i = 0; i < 10; i++) {
-    print [i + 1, i * 2];
-}
+func main() {
+    for (let i = 0; i < 10; i++) {
+        print [i + 1, i * 2];
+    }
 
-let i = 100;
+    let i = 100;
 
-while (i > 0) {
-    print i;
-    i /= 2;
+    while (i > 0) {
+        print i;
+        i /= 2;
+    }
 }

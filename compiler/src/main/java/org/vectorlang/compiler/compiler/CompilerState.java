@@ -9,26 +9,25 @@ public class CompilerState {
     private Map<String, Integer> ids, functionIds;
     private Set<String> parameters;
     private int currentId, parameterId;
-    private boolean isNew;
     private Counter labelCounter, staticCounter, funcCounter;
     private CompilerState previous;
 
-    public CompilerState(CompilerState previous, Counter labelCounter, Counter staticCounter, Counter funcCounter, boolean isNew) {
+    public CompilerState(CompilerState previous, Counter labelCounter, Counter staticCounter, Counter funcCounter) {
         this.previous = previous;
         this.ids = new HashMap<>();
         this.functionIds = new HashMap<>();
-        this.currentId = (previous != null && !isNew) ? previous.currentId : 0;
-        this.parameterId = (previous != null && !isNew) ? previous.parameterId : 0;
-        this.labelCounter = labelCounter;
-        this.staticCounter = staticCounter;
-        this.funcCounter = funcCounter;
+        this.currentId = (previous != null) ? previous.currentId : 0;
+        this.parameterId = (previous != null) ? previous.parameterId : 0;
+        this.labelCounter = (labelCounter != null) ? labelCounter : previous.labelCounter;
+        this.staticCounter = (staticCounter != null) ? staticCounter : previous.staticCounter;
+        this.funcCounter = (funcCounter != null) ? funcCounter : previous.funcCounter;
         this.parameters = new HashSet<>();
     }
 
     public int get(String name) {
         if (ids.containsKey(name)) {
             return ids.get(name);
-        } else if (previous != null && !isNew) {
+        } else if (previous != null) {
             return previous.get(name);
         } else {
             return -1;
@@ -45,7 +44,13 @@ public class CompilerState {
     }
 
     public boolean isParameter(String name) {
-        return parameters.contains(name);
+        if (parameters.contains(name)) {
+            return true;
+        } else if (previous != null) {
+            return previous.isParameter(name);
+        } else {
+            return false;
+        }
     }
 
     public int addLabel() {
@@ -70,5 +75,13 @@ public class CompilerState {
         } else {
             return this.functionIds.get(name);
         }
+    }
+
+    public void updateCount(CompilerState state) {
+        this.currentId = Math.max(this.currentId, state.currentId);
+    }
+
+    public int getCount() {
+        return currentId;
     }
 }

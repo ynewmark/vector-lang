@@ -4,8 +4,8 @@ public class PrintStatement extends Statement {
 
     private final Expression expression;
 
-    public PrintStatement(Expression expression, int length, int position) {
-        super(length, position);
+    public PrintStatement(Expression expression) {
+        super();
         this.expression = expression;
     }
 

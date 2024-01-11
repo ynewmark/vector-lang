@@ -5,8 +5,8 @@ public class WhileStatement extends Statement {
     private final Expression condition;
     private final Statement body;
 
-    public WhileStatement(Expression condition, Statement body, int length, int position) {
-        super(length, position);
+    public WhileStatement(Expression condition, Statement body) {
+        super();
         this.condition = condition;
         this.body = body;
     }

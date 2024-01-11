@@ -4,8 +4,8 @@ public class BlockStatement extends Statement {
 
     private final Statement[] statements;
 
-    public BlockStatement(Statement[] statements, int length, int position) {
-        super(length, position);
+    public BlockStatement(Statement[] statements) {
+        super();
         this.statements = statements;
     }
 

@@ -5,8 +5,8 @@ public class AssignStatement extends Statement {
     private final String leftHand;
     private final Expression rightHand;
 
-    public AssignStatement(String leftHand, Expression rightHand, int length, int position) {
-        super(length, position);
+    public AssignStatement(String leftHand, Expression rightHand) {
+        super();
         this.rightHand = rightHand;
         this.leftHand = leftHand;
     }

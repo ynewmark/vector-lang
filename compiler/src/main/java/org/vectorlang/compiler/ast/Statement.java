@@ -2,8 +2,8 @@ package org.vectorlang.compiler.ast;
 
 public abstract class Statement extends Node {
     
-    protected Statement(int length, int position) {
-        super(length, position);
+    protected Statement() {
+        super();
     }
 
     @Override

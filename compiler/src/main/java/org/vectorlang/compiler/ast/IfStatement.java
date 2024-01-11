@@ -5,8 +5,8 @@ public class IfStatement extends Statement {
     private final Statement ifStatment, elseStatement;
     private final Expression condition;
 
-    public IfStatement(Statement ifStatement, Statement elseStatement, Expression condition, int length, int position) {
-        super(length, position);
+    public IfStatement(Statement ifStatement, Statement elseStatement, Expression condition) {
+        super();
         this.ifStatment = ifStatement;
         this.elseStatement = elseStatement;
         this.condition = condition;

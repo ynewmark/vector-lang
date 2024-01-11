@@ -3,65 +3,76 @@ package org.vectorlang.compiler.compiler;
 import java.util.Arrays;
 
 public class Type {
-    private Shape[] typeData;
+    private int[] shape;
+    private BaseType baseType;
     private boolean constant;
 
-    public Type(Shape typeData, boolean constant) {
-        this(new Shape[]{typeData}, constant);
-    }
-
-    public Type(Shape[] typeData, boolean constant) {
-        this.typeData = typeData;
+    public Type(BaseType baseType, int[] shape, boolean constant) {
+        this.shape = shape;
+        this.baseType = baseType;
         this.constant = constant;
     }
 
-    public Type apply(Shape shape) {
-        if (typeData.length > 1) {
-            if (typeData[0].equals(shape)) {
-                Shape[] result = new Shape[typeData.length - 1];
-                for (int i = 0; i < result.length; i++) {
-                    result[i] = typeData[i + 1];
-                }
-                return new Type(result, constant);
-            }
+    public Type vectorize(int length) {
+        int[] newShape = new int[shape.length + 1];
+        newShape[0] = length;
+        for (int i = 0; i < shape.length; i++) {
+            newShape[i + 1] = shape[i];
         }
-        return null;
-    }
-
-    public Type vectorize(int size) {
-        if (typeData.length == 1) {
-            return new Type(typeData[0].vectorize(size), constant);
-        }
-        return null;
+        return new Type(baseType, newShape, constant);
     }
 
     public Type indexed() {
-        if (typeData.length == 1) {
-            return new Type(typeData[0].index(), constant);
+        if (shape.length > 0) {
+            int[] newShape = new int[shape.length - 1];
+            for (int i = 0; i < newShape.length; i++) {
+                newShape[i] = shape[i + 1];
+            }
+            return new Type(baseType, newShape, constant);
+        } else {
+            return null;
         }
-        return null;
+    }
+
+    public Type concat(Type type) {
+        int[] newShape = new int[shape.length];
+        shape[0] = shape[0] + type.shape[0];
+        for (int i = 1; i < shape.length; i++) {
+            newShape[i] = shape[i];
+        }
+        return new Type(baseType, newShape, constant);
     }
 
     public int getSize() {
-        return this.typeData[0].getSize();
+        int size = 1; /*switch (baseType) {
+            case BOOL -> 1;
+            case CHAR -> 1;
+            case FLOAT -> 8;
+            case INT -> 4;
+        };*/
+        for (int dimension : shape) {
+            size *= dimension; 
+        }
+        return size;
     }
 
     public int[] getShape() {
-        return this.typeData[0].shape();
+        return shape;
     }
 
     public BaseType getBaseType() {
-        return this.typeData[0].baseType();
+        return baseType;
     }
 
     public Type constant() {
-        return new Type(typeData, true);
+        return new Type(baseType, shape, true);
     }
 
     @Override
     public boolean equals(Object object) {
         if (object instanceof Type) {
-            return Arrays.equals(typeData, ((Type) object).typeData);
+            return Arrays.equals(shape, ((Type) object).shape)
+                && baseType.equals(((Type) object).baseType);
         }
         return false;
     }
@@ -69,13 +80,13 @@ public class Type {
     @Override
     public String toString() {
         StringBuilder builder = new StringBuilder();
-        builder.append(switch(typeData[0].baseType()) {
+        builder.append(switch(baseType) {
             case BOOL -> "bool";
             case CHAR -> "char";
             case FLOAT -> "float";
             case INT -> "int";
         });
-        for (int i : typeData[0].shape()) {
+        for (int i : shape) {
             builder.append('[').append(i).append(']');
         }
         return builder.toString();

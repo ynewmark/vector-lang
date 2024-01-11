@@ -1,105 +1,81 @@
 #include "calculate.h"
 #include "opcode.h"
 
-void calc_unary(unsigned long opcode, void *operand, void *destination, int size) {
-    int index = 0;
+void calc_unary(unsigned long opcode, char *operand, char *destination, int width, int dest_width, int size) {
     int current = 0;
-    while (current < size) {
+    while (current < size * 8) {
         if (opcode == OP_NEG) {
-            *(((int *) destination) + index) = -*((((int *) operand)) + index);
-            index = index + 2;
+            *((int *) destination) = -*((int *) operand);
         } else if (opcode == OP_F_NEG) {
-            *(((double *) destination) + index) = -*((((double *) operand)) + index);
-            index = index + 1;
+            *((double *) destination) = -*((double *) operand);
         } else if (opcode == OP_NOT) {
-            if (*((((char *) operand)) + index) == 0) {
-                *(((char *) destination) + index) = 1;
+            if (*((char *) operand) == 0) {
+                *((char *) destination) = 1;
             } else {
-                *(((char *) destination) + index) = 0;
+                *((char *) destination) = 0;
             }
-            index = index + 8;
         }
-        current++;
+        current += width;
+        operand += width;
+        destination += dest_width;
     }
 }
 
-void calc_binary(unsigned long opcode, void *operand1, void *operand2, void *destination, int size) {
-    int index = 0;
+void calc_binary(unsigned long opcode, char *operand1, char *operand2, char *destination, int width1, int width2, int dest_width, int size) {
     int current = 0;
-    while (current < size) {
+    while (current < size * 8) {
         if (opcode == OP_ADD) {
-            *(((int *) destination) + index) = *((((int *) operand1)) + index) + *((((int *) operand2)) + index);
-            index = index + 2;
+            *((int *) destination) = *((int *) operand1) + *((int *) operand2);
         } else if (opcode == OP_SUB) {
-            *(((int *) destination) + index) = *((((int *) operand1)) + index) - *((((int *) operand2)) + index);
-            index = index + 2;
+            *((int *) destination) = *((int *) operand1) - *((int *) operand2);
         } else if (opcode == OP_MULT) {
-            *(((int *) destination) + index) = *((((int *) operand1)) + index) * *((((int *) operand2)) + index);
-            index = index + 2;
+            *((int *) destination) = *((int *) operand1) * *((int *) operand2);
         } else if (opcode == OP_DIV) {
-            *(((int *) destination) + index) = *((((int *) operand1)) + index) / *((((int *) operand2)) + index);
-            index = index + 2;
+            *((int *) destination) = *((int *) operand1) / *((int *) operand2);
         } else if (opcode == OP_F_ADD) {
-            *(((double *) destination) + index) = *((((double *) operand1)) + index) + *((((double *) operand2)) + index);
-            index = index + 1;
+            *((double *) destination) = *((double *) operand1) + *((double *) operand2);
         } else if (opcode == OP_F_SUB) {
-            *(((double *) destination) + index) = *((((double *) operand1)) + index) - *((((double *) operand2)) + index);
-            index = index + 1;
+            *((double *) destination) = *((double *) operand1) - *((double *) operand2);
         } else if (opcode == OP_F_MULT) {
-            *(((double *) destination) + index) = *((((double *) operand1)) + index) * *((((double *) operand2)) + index);
-            index = index + 1;
+            *((double *) destination) = *((double *) operand1) * *((double *) operand2);
         } else if (opcode == OP_F_DIV) {
-            *(((double *) destination) + index) = *((((double *) operand1)) + index) / *((((double *) operand2)) + index);
-            index = index + 1;
+            *((double *) destination) = *((double *) operand1) / *((double *) operand2);
         } else if (opcode == OP_AND) {
-            *(((char *) destination) + index) = *((((char *) operand1)) + index) & *((((char *) operand2)) + index);
-            index = index + 8;
+            *((char *) destination) = *((char *) operand1) & *((char *) operand2);
         } else if (opcode == OP_OR) {
-            *(((char *) destination) + index) = *((((char *) operand1)) + index) | *((((char *) operand2)) + index);
-            index = index + 8;
+            *((char *) destination) = *((char *) operand1) | *((char *) operand2);
         } else if (opcode == OP_EQ) {
-            *(((char *) destination) + (index * 4)) = *((((int *) operand1)) + index) == *((((int *) operand2)) + index);
-            index = index + 2;
+            *((char *) destination) = *((int *) operand1) == *((int *) operand2);
         } else if (opcode == OP_NEQ) {
-            *(((char *) destination) + (index * 4)) = *((((int *) operand1)) + index) != *((((int *) operand2)) + index);
-            index = index + 2;
+            *((char *) destination) = *((int *) operand1) != *((int *) operand2);
         } else if (opcode == OP_B_EQ) {
-            *(((char *) destination) + index) = *((((char *) operand1)) + index) == *((((char *) operand2)) + index);
-            index = index + 8;
+            *((char *) destination) = *((char *) operand1) == *((char *) operand2);
         } else if (opcode == OP_B_NEQ) {
-            *(((char *) destination) + index) = *((((char *) operand1)) + index) != *((((char *) operand2)) + index);
-            index = index + 8;
+            *((char *) destination) = *((char *) operand1) != *((char *) operand2);
         } else if (opcode == OP_F_EQ) {
-            *(((char *) destination) + (index * 8)) = *((((double *) operand1)) + index) == *((((double *) operand2)) + index);
-            index = index + 1;
+            *((char *) destination) = *((double *) operand1) == *((double *) operand2);
         } else if (opcode == OP_F_NEQ) {
-            *(((char *) destination) + (index * 8)) = *((((double *) operand1)) + index) != *((((double *) operand2)) + index);
-            index = index + 1;
+            *((char *) destination) = *((double *) operand1) != *((double *) operand2);
         } else if (opcode == OP_LT) {
-            *(((char *) destination) + (index * 4)) = *((((int *) operand1)) + index) < *((((int *) operand2)) + index);
-            index = index + 2;
+            *((char *) destination) = *((int *) operand1) < *((int *) operand2);
         } else if (opcode == OP_LTE) {
-            *(((char *) destination) + (index * 4)) = *((((int *) operand1)) + index) <= *((((int *) operand2)) + index);
-            index = index + 2;
+            *((char *) destination) = *((int *) operand1) <= *((int *) operand2);
         } else if (opcode == OP_GT) {
-            *(((char *) destination) + (index * 4)) = *((((int *) operand1)) + index) > *((((int *) operand2)) + index);
-            index = index + 2;
+            *((char *) destination) = *((int *) operand1) > *((int *) operand2);
         } else if (opcode == OP_GTE) {
-            *(((char *) destination) + (index * 4)) = *((((int *) operand1)) + index) >= *((((int *) operand2)) + index);
-            index = index + 2;
+            *((char *) destination) = *((int *) operand1) >= *((int *) operand2);
         } else if (opcode == OP_F_LT) {
-            *(((char *) destination) + (index * 8)) = *((((double *) operand1)) + index) < *((((double *) operand2)) + index);
-            index = index + 1;
+            *((char *) destination) = *((double *) operand1) < *((double *) operand2);
         } else if (opcode == OP_F_LTE) {
-            *(((char *) destination) + (index * 8)) = *((((double *) operand1)) + index) <= *((((double *) operand2)) + index);
-            index = index + 1;
+            *((char *) destination) = *((double *) operand1) <= *((double *) operand2);
         } else if (opcode == OP_F_GT) {
-            *(((char *) destination) + (index * 8)) = *((((double *) operand1)) + index) > *((((double *) operand2)) + index);
-            index = index + 1;
+            *((char *) destination) = *((double *) operand1) > *((double *) operand2);
         } else if (opcode == OP_F_GTE) {
-            *(((char *) destination) + (index * 8)) = *((((double *) operand1)) + index) >= *((((double *) operand2)) + index);
-            index = index + 1;
+            *((char *) destination) = *((double *) operand1) >= *((double *) operand2);
         }
-        current++;
+        current += width1;
+        operand1 += width1;
+        operand2 += width2;
+        destination += dest_width;
     }
 }

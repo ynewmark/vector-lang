@@ -7,8 +7,8 @@ public class CallExpression extends Expression {
     private final String name;
     private final Expression[] args;
 
-    public CallExpression(String name, Expression[] args, Type type, int length, int position) {
-        super(type, length, position);
+    public CallExpression(String name, Expression[] args, Type type) {
+        super(type);
         this.name = name;
         this.args = args;
     }

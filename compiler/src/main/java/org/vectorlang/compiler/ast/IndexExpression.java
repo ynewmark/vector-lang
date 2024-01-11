@@ -6,14 +6,14 @@ public class IndexExpression extends Expression {
 
     private final Expression base, index;
 
-    public IndexExpression(Expression base, Expression index, Type type, int length, int position) {
-        super(type, length, position);
+    public IndexExpression(Expression base, Expression index, Type type) {
+        super(type);
         this.base = base;
         this.index = index;
     }
 
-    public IndexExpression(Expression base, Expression index, int length, int position) {
-        this(base, index, null, length, position);
+    public IndexExpression(Expression base, Expression index) {
+        this(base, index, null);
     }
 
     public Expression getBase() {

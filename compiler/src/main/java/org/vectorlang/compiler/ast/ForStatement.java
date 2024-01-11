@@ -2,12 +2,11 @@ package org.vectorlang.compiler.ast;
 
 public class ForStatement extends Statement {
 
-    private final Statement initial, body;
-    private final AssignStatement each;
+    private final Statement initial, body, each;
     private final Expression condition;
 
-    public ForStatement(Expression condition, Statement initial, AssignStatement each, Statement body, int length, int position) {
-        super(length, position);
+    public ForStatement(Expression condition, Statement initial, Statement each, Statement body) {
+        super();
         this.initial = initial;
         this.each = each;
         this.body = body;
@@ -18,7 +17,7 @@ public class ForStatement extends Statement {
         return initial;
     }
 
-    public AssignStatement getEach() {
+    public Statement getEach() {
         return each;
     }
 

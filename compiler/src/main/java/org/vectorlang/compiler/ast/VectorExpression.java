@@ -6,13 +6,13 @@ public class VectorExpression extends Expression {
 
     private final Expression[] expressions;
 
-    public VectorExpression(Expression[] expressions, Type type, int length, int position) {
-        super(type, length, position);
+    public VectorExpression(Expression[] expressions, Type type) {
+        super(type);
         this.expressions = expressions;
     }
 
-    public VectorExpression(Expression[] expressions, int length, int position) {
-        this(expressions, null, length, position);
+    public VectorExpression(Expression[] expressions) {
+        this(expressions, null);
     }
 
     public Expression[] getExpressions() {

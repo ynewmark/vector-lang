@@ -3,12 +3,12 @@
 
 void init_heap(unsigned int count);
 
-int heap_alloc(int size);
+void *heap_alloc(int size, short width);
 
-void heap_dealloc(int id);
+void heap_drop_to(void *pointer);
 
-void *heap_pointer(int id);
+void *heap_pointer();
 
-int heap_get_size(int id);
+void heap_dump();
 
 #endif

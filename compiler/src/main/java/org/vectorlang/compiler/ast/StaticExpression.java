@@ -4,15 +4,24 @@ import org.vectorlang.compiler.compiler.Type;
 
 public class StaticExpression extends Expression {
     
-    private final long[] data;
+    private final LiteralExpression[] data;
 
-    public StaticExpression(long[] data, Type type, int length, int position) {
-        super(type, length, position);
+    public StaticExpression(LiteralExpression[] data, Type type) {
+        super(type);
         this.data = data;
     }
 
-    public long[] getData() {
+    public LiteralExpression[] getData() {
         return data;
+    }
+
+    public long[] getRaw() {
+        long[] raw = new long[data.length + 1];
+        for (int i = 0; i < raw.length; i++) {
+            raw[i] = data[i].getRaw();
+        }
+        raw[raw.length - 1] = data.length;
+        return raw;
     }
 
     @Override

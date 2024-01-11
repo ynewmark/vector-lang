@@ -6,13 +6,13 @@ public class IdentifierExpression extends Expression {
 
     private final String name;
 
-    public IdentifierExpression(String name, Type type, int length, int position) {
-        super(type, length, position);
+    public IdentifierExpression(String name, Type type) {
+        super(type);
         this.name = name;
     }
 
-    public IdentifierExpression(String name, int length, int position) {
-        this(name, null, length, position);
+    public IdentifierExpression(String name) {
+        this(name, null);
     }
 
     public String getName() {

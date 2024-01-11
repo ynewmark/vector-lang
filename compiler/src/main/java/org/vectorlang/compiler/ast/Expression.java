@@ -6,8 +6,8 @@ public abstract class Expression extends Node {
 
     private final Type type;
 
-    protected Expression(Type type, int length, int position) {
-        super(length, position);
+    protected Expression(Type type) {
+        super();
         this.type = type;
     }
 

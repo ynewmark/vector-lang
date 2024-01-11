@@ -6,13 +6,13 @@ public class GroupingExpression extends Expression {
 
     private final Expression expression;
 
-    public GroupingExpression(Expression expression, Type type, int length, int position) {
-        super(type, length, position);
+    public GroupingExpression(Expression expression, Type type) {
+        super(type);
         this.expression = expression;
     }
 
-    public GroupingExpression(Expression expression, int length, int position) {
-        this(expression, null, length, position);
+    public GroupingExpression(Expression expression) {
+        this(expression, null);
     }
 
     public Expression getExpression() {

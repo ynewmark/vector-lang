@@ -7,14 +7,14 @@ public class UnaryExpression extends Expression {
     private final Expression expression;
     private final UnaryOperator operator;
 
-    public UnaryExpression(Expression expression, UnaryOperator operator, Type type, int length, int position) {
-        super(type, length, position);
+    public UnaryExpression(Expression expression, UnaryOperator operator, Type type) {
+        super(type);
         this.expression = expression;
         this.operator = operator;
     }
 
-    public UnaryExpression(Expression expression, UnaryOperator operator, int length, int position) {
-        this(expression, operator, null, length, position);
+    public UnaryExpression(Expression expression, UnaryOperator operator) {
+        this(expression, operator, null);
     }
 
     public Expression getExpression() {

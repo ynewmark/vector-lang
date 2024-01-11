@@ -1,10 +1,21 @@
 package org.vectorlang.compiler.ast;
 
 public abstract class Node {
-    protected final int start;
-    protected final int end;
+    private int start;
+    private int end;
 
-    protected Node(int start, int end) {
+    protected Node() {
+    }
+
+    public int getStart() {
+        return start;
+    }
+
+    public int getEnd() {
+        return end;
+    }
+
+    public void setPosition(int start, int end) {
         this.start = start;
         this.end = end;
     }

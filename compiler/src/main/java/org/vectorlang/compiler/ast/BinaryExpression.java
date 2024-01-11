@@ -7,15 +7,15 @@ public class BinaryExpression extends Expression {
     private final Expression left, right;
     private final BinaryOperator operator;
 
-    public BinaryExpression(Expression left, Expression right, BinaryOperator operator, Type type, int length, int position) {
-        super(type, length, position);
+    public BinaryExpression(Expression left, Expression right, BinaryOperator operator, Type type) {
+        super(type);
         this.left = left;
         this.right = right;
         this.operator = operator;
     }
 
-    public BinaryExpression(Expression left, Expression right, BinaryOperator operator, int length, int position) {
-        this(left, right, operator, null, length, position);
+    public BinaryExpression(Expression left, Expression right, BinaryOperator operator) {
+        this(left, right, operator, null);
     }
 
     public Expression getLeft() {

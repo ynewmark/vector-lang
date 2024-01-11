@@ -10,8 +10,8 @@ public class FunctionStatement extends Statement {
     private final Statement[] body;
     private final Type returnType;
 
-    public FunctionStatement(String name, String[] names, Type[] types, Statement[] body, Type type, int length, int position) {
-        super(length, position);
+    public FunctionStatement(String name, String[] names, Type[] types, Statement[] body, Type type) {
+        super();
         this.name = name;
         this.parameterNames = names;
         this.parameterTypes = types;
