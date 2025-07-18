@@ -1,6 +1,6 @@
 package org.vectorlang.compiler.ast;
 
-import org.vectorlang.compiler.compiler.Type;
+import org.vectorlang.compiler.typer.Type;
 
 public abstract class Expression extends Node {
 

@@ -1,21 +1,24 @@
-package org.vectorlang.compiler.compiler;
+package org.vectorlang.compiler.typer;
 
 import java.util.Arrays;
+import java.util.Map;
+
+import org.vectorlang.compiler.compiler.BaseType;
 
 public class Type {
-    private int[] shape;
+    private Dimension[] shape;
     private BaseType baseType;
     private boolean constant;
 
-    public Type(BaseType baseType, int[] shape, boolean constant) {
+    public Type(BaseType baseType, Dimension[] shape, boolean constant) {
         this.shape = shape;
         this.baseType = baseType;
         this.constant = constant;
     }
 
     public Type vectorize(int length) {
-        int[] newShape = new int[shape.length + 1];
-        newShape[0] = length;
+        Dimension[] newShape = new Dimension[shape.length + 1];
+        newShape[0] = ConstDimension.getDimension(length);
         for (int i = 0; i < shape.length; i++) {
             newShape[i + 1] = shape[i];
         }
@@ -24,7 +27,7 @@ public class Type {
 
     public Type indexed() {
         if (shape.length > 0) {
-            int[] newShape = new int[shape.length - 1];
+            Dimension[] newShape = new Dimension[shape.length - 1];
             for (int i = 0; i < newShape.length; i++) {
                 newShape[i] = shape[i + 1];
             }
@@ -35,10 +38,39 @@ public class Type {
     }
 
     public Type concat(Type type) {
-        int[] newShape = new int[shape.length];
-        shape[0] = shape[0] + type.shape[0];
+        Dimension[] newShape = new Dimension[shape.length];
+        shape[0] = shape[0].plus(type.shape[0]);
         for (int i = 1; i < shape.length; i++) {
             newShape[i] = shape[i];
+        }
+        return new Type(baseType, newShape, constant);
+    }
+
+    public boolean match(Map<String, Integer> constraints, Type other) {
+        if (shape.length != other.shape.length) {
+            return false;
+        } else {
+            for (int i = 0; i < shape.length; i++) {
+                int value = other.shape[i].getValue(constraints);
+                if (value == -1) {
+                    return false;
+                }
+                if (!shape[i].match(constraints, value)) {
+                    return false;
+                }
+            }
+            return true;
+        }
+    }
+
+    public Type constrain(Map<String, Integer> constraints) {
+        Dimension[] newShape = new Dimension[shape.length];
+        for (int i = 0; i < shape.length; i++) {
+            int value = shape[i].getValue(constraints);
+            if (value == -1) {
+                return null;
+            }
+            newShape[i] = ConstDimension.getDimension(value);
         }
         return new Type(baseType, newShape, constant);
     }
@@ -50,13 +82,17 @@ public class Type {
             case FLOAT -> 8;
             case INT -> 4;
         };*/
-        for (int dimension : shape) {
-            size *= dimension; 
+        for (Dimension dimension : shape) {
+            int value = dimension.getValue(Map.of());
+            if (value == -1) {
+                return -1;
+            }
+            size *= value;
         }
         return size;
     }
 
-    public int[] getShape() {
+    public Dimension[] getShape() {
         return shape;
     }
 
@@ -86,7 +122,7 @@ public class Type {
             case FLOAT -> "float";
             case INT -> "int";
         });
-        for (int i : shape) {
+        for (Dimension i : shape) {
             builder.append('[').append(i).append(']');
         }
         return builder.toString();

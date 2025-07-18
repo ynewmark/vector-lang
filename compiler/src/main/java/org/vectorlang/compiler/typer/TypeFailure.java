@@ -1,4 +1,4 @@
-package org.vectorlang.compiler.compiler;
+package org.vectorlang.compiler.typer;
 
 public record TypeFailure(Type type1, Type type2, String info) {
     @Override

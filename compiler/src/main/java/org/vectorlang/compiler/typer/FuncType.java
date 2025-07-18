@@ -1,4 +1,4 @@
-package org.vectorlang.compiler.compiler;
+package org.vectorlang.compiler.typer;
 
 public record FuncType(Type[] argTypes, Type returnType) {
     

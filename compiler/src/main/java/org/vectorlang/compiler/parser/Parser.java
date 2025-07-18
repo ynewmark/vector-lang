@@ -26,7 +26,10 @@ import org.vectorlang.compiler.ast.UnaryOperator;
 import org.vectorlang.compiler.ast.VectorExpression;
 import org.vectorlang.compiler.ast.WhileStatement;
 import org.vectorlang.compiler.compiler.BaseType;
-import org.vectorlang.compiler.compiler.Type;
+import org.vectorlang.compiler.typer.ConstDimension;
+import org.vectorlang.compiler.typer.Dimension;
+import org.vectorlang.compiler.typer.Type;
+import org.vectorlang.compiler.typer.VarDimension;
 
 public class Parser {
 
@@ -371,13 +374,16 @@ public class Parser {
             if (baseType == null) {
                 return null;
             }
-            List<Integer> list = new ArrayList<>();
+            List<Dimension> list = new ArrayList<>();
             while (state.matches(TokenType.OPEN_BRACKET)) {
-                state.consume(TokenType.INT_LITERAL);
-                list.add(Integer.parseInt(state.previous().value()));
+                if (state.matches(TokenType.INT_LITERAL)) {
+                    list.add(ConstDimension.getDimension(Integer.parseInt(state.previous().value())));
+                } else if (state.matches(TokenType.IDENTIFIER)) {
+                    list.add(new VarDimension(state.previous().value()));
+                }
                 state.consume(TokenType.CLOSE_BRACKET);
             }
-            int[] shape = new int[list.size()];
+            Dimension[] shape = new Dimension[list.size()];
             for (int i = 0; i < list.size(); i++) {
                 shape[i] = list.get(i);
             }

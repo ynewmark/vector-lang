@@ -1,7 +1,9 @@
-package org.vectorlang.compiler.compiler;
+package org.vectorlang.compiler.typer;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.vectorlang.compiler.ast.AssignStatement;
 import org.vectorlang.compiler.ast.BinaryExpression;
@@ -28,6 +30,9 @@ import org.vectorlang.compiler.ast.UnaryOperator;
 import org.vectorlang.compiler.ast.VectorExpression;
 import org.vectorlang.compiler.ast.Visitor;
 import org.vectorlang.compiler.ast.WhileStatement;
+import org.vectorlang.compiler.compiler.BaseType;
+import org.vectorlang.compiler.compiler.BinaryTable;
+import org.vectorlang.compiler.compiler.UnaryTable;
 
 public class Typer implements Visitor<TyperState, Node> {
 
@@ -166,7 +171,7 @@ public class Typer implements Visitor<TyperState, Node> {
     public Node visitIndexExpr(IndexExpression expression, TyperState arg) {
         Expression newBase = (Expression) expression.getBase().visitExpression(this, arg);
         Expression newIndex = (Expression) expression.getIndex().visitExpression(this, arg);
-        if (!newIndex.getType().equals(new Type(BaseType.INT, new int[0], false))) {
+        if (!newIndex.getType().equals(new Type(BaseType.INT, new Dimension[0], false))) {
             failures.add(new TypeFailure(newIndex.getType(), null, "index must be an integer"));
         }
         return new IndexExpression(newBase, newIndex, newBase.getType().indexed());
@@ -213,7 +218,7 @@ public class Typer implements Visitor<TyperState, Node> {
     @Override
     public Node visitIfStmt(IfStatement node, TyperState arg) {
         Expression condition = (Expression) node.getCondition().visitExpression(this, arg);
-        if (!condition.getType().equals(new Type(BaseType.BOOL, new int[0], false))) {
+        if (!condition.getType().equals(new Type(BaseType.BOOL, new Dimension[0], false))) {
             failures.add(new TypeFailure(condition.getType(), null, "condition must be a boolean"));
         }
         Statement ifStatement = (Statement) node.getIfStatement().visitStatement(this, arg);
@@ -227,7 +232,7 @@ public class Typer implements Visitor<TyperState, Node> {
     @Override
     public Node visitWhileStmt(WhileStatement node, TyperState arg) {
         Expression condition = (Expression) node.getCondition().visitExpression(this, arg);
-        if (!condition.getType().equals(new Type(BaseType.BOOL, new int[0], false))) {
+        if (!condition.getType().equals(new Type(BaseType.BOOL, new Dimension[0], false))) {
             failures.add(new TypeFailure(condition.getType(), null, "condition must be a boolean"));
         }
         Statement body = (Statement) node.getBody().visitStatement(this, arg);
@@ -240,7 +245,7 @@ public class Typer implements Visitor<TyperState, Node> {
         Statement initial = (Statement) node.getInitial().visitStatement(this, state);
         AssignStatement each = (AssignStatement) node.getEach().visitStatement(this, state);
         Expression condition = (Expression) node.getCondition().visitExpression(this, state);
-        if (!condition.getType().equals(new Type(BaseType.BOOL, new int[0], false))) {
+        if (!condition.getType().equals(new Type(BaseType.BOOL, new Dimension[0], false))) {
             failures.add(new TypeFailure(condition.getType(), null, "condition must be a boolean"));
         }
         Statement body = (Statement) node.getBody().visitStatement(this, state);
@@ -255,6 +260,7 @@ public class Typer implements Visitor<TyperState, Node> {
     @Override
     public Node visitCallExpression(CallExpression expression, TyperState arg) {
         Expression[] args = new Expression[expression.getArgs().length];
+        Map<String, Integer> constraints = new HashMap<>();
         for (int i = 0; i < args.length; i++) {
             args[i] = (Expression) expression.getArgs()[i].visitExpression(this, arg);
         }
@@ -269,14 +275,21 @@ public class Typer implements Visitor<TyperState, Node> {
             failures.add(new TypeFailure(null, null, expression.getName() + " wrong number of arguments"));
         } else {
             for (int i = 0; i < args.length; i++) {
-                if (!args[i].getType().equals(funcType.argTypes()[i])) {
+                if (!args[i].getType().getBaseType().equals(funcType.argTypes()[i].getBaseType())
+                    || !funcType.argTypes()[i].match(constraints, args[i].getType())) {
                     failures.add(
                         new TypeFailure(funcType.argTypes()[i], args[i].getType(), "mismatched argument")
                     );
                 }
             }
         }
-        return new CallExpression(expression.getName(), args, funcType.returnType());
+        Type returnType = funcType.returnType().constrain(constraints);
+        if (returnType == null) {
+            failures.add(
+                new TypeFailure(funcType.returnType(), null, "unable to constrain")
+            );
+        }
+        return new CallExpression(expression.getName(), args, returnType);
     }
 
     @Override

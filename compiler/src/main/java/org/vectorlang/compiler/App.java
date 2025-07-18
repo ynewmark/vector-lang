@@ -13,11 +13,11 @@ import org.vectorlang.compiler.compiler.Chunk;
 import org.vectorlang.compiler.compiler.Compiler;
 import org.vectorlang.compiler.compiler.Linker;
 import org.vectorlang.compiler.compiler.Pruner;
-import org.vectorlang.compiler.compiler.TypeFailure;
-import org.vectorlang.compiler.compiler.Typer;
 import org.vectorlang.compiler.parser.Lexer;
 import org.vectorlang.compiler.parser.Parser;
 import org.vectorlang.compiler.parser.Token;
+import org.vectorlang.compiler.typer.TypeFailure;
+import org.vectorlang.compiler.typer.Typer;
 
 public class App {
     public static void main(String[] args) {

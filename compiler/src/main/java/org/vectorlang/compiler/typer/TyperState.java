@@ -1,4 +1,4 @@
-package org.vectorlang.compiler.compiler;
+package org.vectorlang.compiler.typer;
 
 import java.util.HashMap;
 import java.util.Map;
