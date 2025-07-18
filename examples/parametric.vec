@@ -1,0 +1,12 @@
+func switch(a: int[i], b: int[i], mode: bool): int[i] {
+    if (mode) {
+        return a + b;
+    } else {
+        return a * b;
+    }
+}
+
+func main() {
+    print switch([1, 2], [3, 4], true);
+    print switch([1, 2, 3], [4, 5, 6], false);
+}
