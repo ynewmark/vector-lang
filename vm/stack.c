@@ -2,8 +2,8 @@
 #include <string.h>
 #include <stdio.h>
 
-#include "stack.h"
 #include "common.h"
+#include "stack.h"
 
 union Item *pointer, *head;
 

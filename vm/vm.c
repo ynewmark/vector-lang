@@ -2,16 +2,14 @@
 #include <string.h>
 #include <stdio.h>
 
+#include "common.h"
 #include "calculate.h"
 #include "heap.h"
 #include "stack.h"
-#include "consts.h"
 #include "opcode.h"
-#include "common.h"
 #include "instruction.h"
 
-unsigned long *instr_p, *static_p;
-int counter;
+unsigned long *static_p;
 
 int get_operand(void **pointer, short *width) {
     struct Metadata item = stack_pop()->data;
@@ -98,6 +96,9 @@ void concat() {
 
 char ret() {
     struct CallFrame *frame = call_stack_pop();
+    if (call_stack_state()) {
+        return 1;
+    }
     void *temp, *source;
     int size = get_operand(&source, NULL);
     for (int i = 0; i < frame->arg_count; i++) {
@@ -105,8 +106,8 @@ char ret() {
     }
     stack_push_all(source, size);
     heap_drop_to(frame->heap_p);
-    counter = frame->return_addr;
-    return call_stack_state();
+    instr_jump(frame->return_addr);
+    return 0;
 }
 
 void store() {
@@ -167,7 +168,7 @@ void alloc(unsigned long arg) {
     frame->locals[frame->local_index++] = pointer;
 }
 
-void index(unsigned long arg) {
+void instr_index(unsigned long arg) {
     void *array;
     unsigned int *index;
     get_operand((void **) &index, NULL);
@@ -231,16 +232,13 @@ void local(unsigned long arg) {
 
 void call(unsigned long arg) {
     struct CallFrame frame;
-    frame.return_addr = counter;
+    frame.return_addr = instr_addr();
     call_stack_push(frame);
     instr_jump(arg);
 }
 
 char step(char debug) {
     unsigned long instr = instr_get();
-    if (debug) {
-        printf("Pos: %i, Instr: %lu\n", counter - 1, instr);
-    }
     if (instr < 24) {
         binary(instr);
     } else if (instr < 27) {
@@ -260,7 +258,7 @@ char step(char debug) {
         } else if (instr == OP_ALLOC) {
             alloc(arg);
         } else if (instr == OP_INDEX) {
-            index(arg);
+            instr_index(arg);
         } else if (instr == OP_PUSHI) {
             pushi(arg);
         } else if (instr == OP_STATIC) {
@@ -279,7 +277,7 @@ char step(char debug) {
             unsigned long *condition;
             get_operand((void **) &condition, NULL);
             if (*((char *) condition)) {
-                counter = arg;
+                instr_jump(arg);
             }
         } else if (instr == OP_ARGSET) {
             call_stack_peek()->arg_count = arg;
@@ -292,10 +290,10 @@ void execute(unsigned long *stat, unsigned long *instructions, int start, char d
     init_stack(1000);
     init_call_stack(1000);
     init_heap(1000);
-    counter = start;
     static_p = stat;
-    instr_p = instructions;
+    instr_load(instructions, start);
     struct CallFrame frame;
+    frame.return_addr = 0;
     call_stack_push(frame);
     while (!step(debug)) {
         if (debug) {
