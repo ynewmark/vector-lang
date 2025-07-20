@@ -275,7 +275,7 @@ public class Pruner implements Visitor<Void, Node> {
         for (int i = 0; i < args.length; i++) {
             args[i] = (Expression) expression.getArgs()[i].visitExpression(this, null);
         }
-        return new CallExpression(expression.getName(), args, expression.getType());
+        return new CallExpression(expression.getName(), args, expression.getType(), expression.getTypeVars());
     }
 
     @Override

@@ -1,5 +1,10 @@
 package org.vectorlang.compiler.compiler;
 
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
 import org.vectorlang.compiler.ast.AssignStatement;
 import org.vectorlang.compiler.ast.BinaryExpression;
 import org.vectorlang.compiler.ast.BinaryOperator;
@@ -24,6 +29,7 @@ import org.vectorlang.compiler.ast.UnaryOperator;
 import org.vectorlang.compiler.ast.VectorExpression;
 import org.vectorlang.compiler.ast.Visitor;
 import org.vectorlang.compiler.ast.WhileStatement;
+import org.vectorlang.compiler.typer.Type;
 
 public class Compiler implements Visitor<CompilerState, Chunk> {
 
@@ -139,6 +145,13 @@ public class Compiler implements Visitor<CompilerState, Chunk> {
     @Override
     public Chunk visitCallExpression(CallExpression expression, CompilerState arg) {
         Chunk chunk = new Chunk("");
+        if (expression.getTypeVars() != null) {
+            List<String> typeVars = new ArrayList<>(expression.getTypeVars().keySet());
+            typeVars.sort(null);
+            for (String typeVar : typeVars) {
+                chunk = chunk.concat(new long[]{OpCode.PUSHI.ordinal(), expression.getTypeVars().get(typeVar)});
+            }
+        }
         for (Expression expr : expression.getArgs()) {
             chunk = chunk.concat(expr.accept(this, arg));
         }
@@ -236,12 +249,21 @@ public class Compiler implements Visitor<CompilerState, Chunk> {
         for (int i = node.getParameterNames().length - 1; i >= 0; i--) {
             state.putParameter(node.getParameterNames()[i]);
         }
+        Set<String> typeVarSet = new HashSet<>();
+        for (Type type : node.getParameterTypes()) {
+            typeVarSet.addAll(type.getTypeVars());
+        }
+        List<String> typeVars = new ArrayList<>(typeVarSet);
+        typeVars.sort(null);
+        for (int i = typeVars.size() - 1; i >= 0; i--) {
+            state.putParameter(typeVars.get(i));
+        }
         Chunk chunk = new Chunk(node.getName());
         for (Statement statement : node.getBody()) {
             chunk = chunk.concat(statement.accept(this, state));
         }
         chunk = new Chunk(node.getName(), new long[]{
-            OpCode.INITFRAME.ordinal(), arg.getCount(), OpCode.ARGSET.ordinal(), node.getParameterNames().length
+            OpCode.INITFRAME.ordinal(), arg.getCount(), OpCode.ARGSET.ordinal(), node.getParameterNames().length + typeVars.size()
         }).concat(chunk);
         return chunk.concat(new long[]{OpCode.RET.ordinal()});
     }

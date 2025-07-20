@@ -1,7 +1,9 @@
 package org.vectorlang.compiler.typer;
 
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 
 public class SumDimension implements Dimension {
 
@@ -31,6 +33,13 @@ public class SumDimension implements Dimension {
         } else {
             return value1 + value2;
         }
+    }
+
+    @Override
+    public Set<String> getVars() {
+        Set<String> typeVars = new HashSet<>(dimension1.getVars());
+        typeVars.addAll(dimension2.getVars());
+        return typeVars;
     }
     
     @Override

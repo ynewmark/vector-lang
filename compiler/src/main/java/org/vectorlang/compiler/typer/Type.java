@@ -1,7 +1,9 @@
 package org.vectorlang.compiler.typer;
 
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 import org.vectorlang.compiler.compiler.BaseType;
 
@@ -98,6 +100,14 @@ public class Type {
 
     public BaseType getBaseType() {
         return baseType;
+    }
+
+    public Set<String> getTypeVars() {
+        Set<String> set = new HashSet<>();
+        for (Dimension dimension : shape) {
+            set.addAll(dimension.getVars());
+        }
+        return set;
     }
 
     public Type constant() {

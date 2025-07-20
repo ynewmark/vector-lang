@@ -1,6 +1,7 @@
 package org.vectorlang.compiler.typer;
 
 import java.util.Map;
+import java.util.Set;
 
 public class VarDimension implements Dimension {
     
@@ -23,6 +24,11 @@ public class VarDimension implements Dimension {
     @Override
     public int getValue(Map<String, Integer> constraints) {
         return constraints.getOrDefault(var, -1);
+    }
+
+    @Override
+    public Set<String> getVars() {
+        return Set.of(var);
     }
 
     @Override

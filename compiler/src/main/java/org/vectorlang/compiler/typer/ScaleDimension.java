@@ -2,6 +2,7 @@ package org.vectorlang.compiler.typer;
 
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 
 public class ScaleDimension implements Dimension {
 
@@ -30,6 +31,11 @@ public class ScaleDimension implements Dimension {
         } else {
             return dimension.getValue(constraints) * factor;
         }
+    }
+
+    @Override
+    public Set<String> getVars() {
+        return dimension.getVars();
     }
 
     @Override

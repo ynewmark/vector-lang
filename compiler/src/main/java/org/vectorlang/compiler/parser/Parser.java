@@ -90,7 +90,7 @@ public class Parser {
                 expressions.add(expression.apply(state));
                 flag = true;
             }
-            return new CallExpression(name, expressions.toArray(new Expression[0]), null);
+            return new CallExpression(name, expressions.toArray(new Expression[0]), null, null);
         }
         return new IdentifierExpression(name);
     }

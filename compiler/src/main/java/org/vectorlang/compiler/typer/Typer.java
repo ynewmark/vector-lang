@@ -2,8 +2,10 @@ package org.vectorlang.compiler.typer;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.vectorlang.compiler.ast.AssignStatement;
 import org.vectorlang.compiler.ast.BinaryExpression;
@@ -269,7 +271,7 @@ public class Typer implements Visitor<TyperState, Node> {
             failures.add(new TypeFailure(null, null,
                 "function " + expression.getName() + " not found")
             );
-            return new CallExpression(expression.getName(), args, null);
+            return new CallExpression(expression.getName(), args, null, null);
         }
         if (funcType.argTypes().length != args.length) {
             failures.add(new TypeFailure(null, null, expression.getName() + " wrong number of arguments"));
@@ -289,7 +291,7 @@ public class Typer implements Visitor<TyperState, Node> {
                 new TypeFailure(funcType.returnType(), null, "unable to constrain")
             );
         }
-        return new CallExpression(expression.getName(), args, returnType);
+        return new CallExpression(expression.getName(), args, returnType, constraints);
     }
 
     @Override
@@ -297,6 +299,13 @@ public class Typer implements Visitor<TyperState, Node> {
         TyperState state = new TyperState(arg);
         for (int i = 0; i < node.getParameterNames().length; i++) {
             state.put(node.getParameterNames()[i], node.getParameterTypes()[i]);
+        }
+        Set<String> typeVars = new HashSet<>();
+        for (Type type : node.getParameterTypes()) {
+            typeVars.addAll(type.getTypeVars());
+        }
+        for (String typeVar : typeVars) {
+            state.put(typeVar, new Type(BaseType.INT, new Dimension[0], true));
         }
         Statement[] statements = new Statement[node.getBody().length];
         for (int i = 0; i < statements.length; i++) {

@@ -1,6 +1,7 @@
 package org.vectorlang.compiler.typer;
 
 import java.util.Map;
+import java.util.Set;
 
 public class ConstDimension implements Dimension {
     
@@ -27,6 +28,11 @@ public class ConstDimension implements Dimension {
         } else {
             return new SumDimension(this, other);
         }
+    }
+
+    @Override
+    public Set<String> getVars() {
+        return Set.of();
     }
 
     @Override

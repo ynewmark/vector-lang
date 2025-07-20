@@ -1,16 +1,20 @@
 package org.vectorlang.compiler.ast;
 
+import java.util.Map;
+
 import org.vectorlang.compiler.typer.Type;
 
 public class CallExpression extends Expression {
     
     private final String name;
     private final Expression[] args;
+    private final Map<String, Integer> typeVars;
 
-    public CallExpression(String name, Expression[] args, Type type) {
+    public CallExpression(String name, Expression[] args, Type type, Map<String, Integer> typeVars) {
         super(type);
         this.name = name;
         this.args = args;
+        this.typeVars = typeVars;
     }
 
     public String getName() {
@@ -19,6 +23,10 @@ public class CallExpression extends Expression {
 
     public Expression[] getArgs() {
         return args;
+    }
+
+    public Map<String, Integer> getTypeVars() {
+        return typeVars;
     }
     
     @Override

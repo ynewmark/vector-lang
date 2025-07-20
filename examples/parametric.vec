@@ -6,7 +6,17 @@ func switch(a: int[i], b: int[i], mode: bool): int[i] {
     }
 }
 
+func avg(a: int[A]): int {
+    let total = 0;
+    for (let i = 0; i < A; i++) {
+        total = total + a[i];
+    }
+    return total / A;
+}
+
 func main() {
     print switch([1, 2], [3, 4], true);
     print switch([1, 2, 3], [4, 5, 6], false);
+    print avg([1, 10, 1]);
+    print avg([32, 123, 12, 16]);
 }
