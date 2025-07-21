@@ -41,7 +41,7 @@ public class Type {
 
     public Type concat(Type type) {
         Dimension[] newShape = new Dimension[shape.length];
-        shape[0] = shape[0].plus(type.shape[0]);
+        newShape[0] = shape[0].plus(type.shape[0]);
         for (int i = 1; i < shape.length; i++) {
             newShape[i] = shape[i];
         }

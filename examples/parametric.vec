@@ -14,9 +14,23 @@ func avg(a: int[A]): int {
     return total / A;
 }
 
+func sum(a: float[A]): float[A + 1] {
+    let total = 0.0;
+    for (let i = 0; i < A; i++) {
+        total += a[i];
+    }
+    return a .. [total];
+}
+
+func concat3(a: float[A], b: float[B], c: float[C]): float[A + B + C] {
+    return a .. b .. c;
+}
+
 func main() {
     print switch([1, 2], [3, 4], true);
     print switch([1, 2, 3], [4, 5, 6], false);
     print avg([1, 10, 1]);
     print avg([32, 123, 12, 16]);
+    print sum([1.0, 2.0, 3.0, 4.0]);
+    print concat3([1.0, 2.0], [3.0, 4.0, 5.0], [6.0]) - [0.5, 0.5, 0.5, 0.5, 0.5, 0.5];
 }

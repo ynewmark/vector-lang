@@ -129,7 +129,7 @@ public class Parser {
 
     private Expression factor(ParserState state) {
         Expression expression = unary.apply(state);
-        while (state.matches(new TokenType[]{TokenType.STAR, TokenType.SLASH, TokenType.DOT_STAR, TokenType.DOT_SLASH})) {
+        while (state.matches(new TokenType[]{TokenType.STAR, TokenType.SLASH, TokenType.DOT_STAR, TokenType.DOT_SLASH, TokenType.DOT_DOT})) {
             BinaryOperator operator = switch (state.previous().type()) {
                 case STAR -> BinaryOperator.MULTIPLY;
                 case SLASH -> BinaryOperator.DIVIDE;
@@ -376,11 +376,7 @@ public class Parser {
             }
             List<Dimension> list = new ArrayList<>();
             while (state.matches(TokenType.OPEN_BRACKET)) {
-                if (state.matches(TokenType.INT_LITERAL)) {
-                    list.add(ConstDimension.getDimension(Integer.parseInt(state.previous().value())));
-                } else if (state.matches(TokenType.IDENTIFIER)) {
-                    list.add(new VarDimension(state.previous().value()));
-                }
+                list.add(dimension(state));
                 state.consume(TokenType.CLOSE_BRACKET);
             }
             Dimension[] shape = new Dimension[list.size()];
@@ -391,6 +387,24 @@ public class Parser {
         } else {
             return null;
         }
+    }
+
+    private Dimension primitiveDimension(ParserState state) {
+        if (state.matches(TokenType.INT_LITERAL)) {
+            return ConstDimension.getDimension(Integer.parseInt(state.previous().value()));
+        } else if (state.matches(TokenType.IDENTIFIER)) {
+            return new VarDimension(state.previous().value());
+        } else {
+            return null;
+        }
+    }
+
+    private Dimension dimension(ParserState state) {
+        Dimension dimension = primitiveDimension(state);
+        while (state.matches(TokenType.PLUS)) {
+            dimension = dimension.plus(primitiveDimension(state));
+        }
+        return dimension;
     }
 
     public CodeBase parse(List<Token> tokens) {
