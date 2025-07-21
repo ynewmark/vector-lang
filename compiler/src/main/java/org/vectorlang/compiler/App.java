@@ -71,6 +71,7 @@ public class App {
                 FileOutputStream stream = new FileOutputStream(destination);
                 stream.write(data);
                 stream.close();
+                System.out.println("Successfully compiled");
             } catch (IOException e) {
                 System.err.println("Cannot write to file " + destination);
                 System.exit(1);
