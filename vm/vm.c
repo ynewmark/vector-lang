@@ -239,9 +239,9 @@ void call(unsigned long arg) {
 
 char step(char debug) {
     unsigned long instr = instr_get();
-    if (instr < 24) {
+    if (instr < 32) {
         binary(instr);
-    } else if (instr < 27) {
+    } else if (instr < 35) {
         unary(instr);
     } else if (instr == OP_CONCAT) {
         concat();

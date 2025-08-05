@@ -73,6 +73,14 @@ public class Compiler implements Visitor<CompilerState, Chunk> {
         binaryTable.put(BaseType.BOOL, BaseType.BOOL, BinaryOperator.CONCAT, OpCode.CONCAT);
         binaryTable.put(BaseType.INT, BaseType.INT, BinaryOperator.CONCAT, OpCode.CONCAT);
         binaryTable.put(BaseType.FLOAT, BaseType.FLOAT, BinaryOperator.CONCAT, OpCode.CONCAT);
+        binaryTable.put(BaseType.CHAR, BaseType.CHAR, BinaryOperator.ADD, OpCode.C_ADD);
+        binaryTable.put(BaseType.CHAR, BaseType.CHAR, BinaryOperator.SUBTRACT, OpCode.C_SUB);
+        binaryTable.put(BaseType.CHAR, BaseType.CHAR, BinaryOperator.EQUAL, OpCode.C_EQ);
+        binaryTable.put(BaseType.CHAR, BaseType.CHAR, BinaryOperator.NOT_EQUAL, OpCode.C_NEQ);
+        binaryTable.put(BaseType.CHAR, BaseType.CHAR, BinaryOperator.LESS_THAN, OpCode.C_LT);
+        binaryTable.put(BaseType.CHAR, BaseType.CHAR, BinaryOperator.EQUAL_LESS_THAN, OpCode.C_LTE);
+        binaryTable.put(BaseType.CHAR, BaseType.CHAR, BinaryOperator.GREATER_THAN, OpCode.C_GT);
+        binaryTable.put(BaseType.CHAR, BaseType.CHAR, BinaryOperator.EQUAL_GREATER_THAN, OpCode.C_GTE);
     }
 
     public Chunk[] compile(CodeBase codeBase, ImportManager importManager) {

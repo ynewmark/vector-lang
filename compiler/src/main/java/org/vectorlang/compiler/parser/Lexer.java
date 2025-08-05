@@ -32,6 +32,8 @@ public class Lexer {
                 addToken(TokenType.getDouble(next, temp), 2);
             } else if (TokenType.getSingle(next) != null) {
                 addToken(TokenType.getSingle(next), 1);
+            } else if (next == '\'') {
+                addQuotedToken(next);
             } else if (Character.isDigit(next)) {
                 addNumberToken(next);
             } else if (!Character.isWhitespace(next)) {
@@ -85,6 +87,23 @@ public class Lexer {
         } else {
             addToken(TokenType.IDENTIFIER, result);
         }
+    }
+
+    private void addQuotedToken(char head) {
+        StringBuilder builder = new StringBuilder();
+        builder.append(head);
+        boolean isEscaped = false;
+        while (peek() != head || isEscaped) {
+            char next = next();
+            builder.append(next);
+            if (next == '\\' && !isEscaped) {
+                isEscaped = true;
+            } else {
+                isEscaped = false;
+            }
+        }
+        builder.append(next());
+        addToken(TokenType.CHAR_LITERAL, builder.toString());
     }
 
     private void addToken(TokenType type, int length) {

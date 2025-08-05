@@ -68,10 +68,14 @@ public class Typer implements Visitor<TyperState, Node> {
         binaryTable.put(BaseType.FLOAT, BaseType.FLOAT, BinaryOperator.SUBTRACT, BaseType.FLOAT);
         binaryTable.put(BaseType.FLOAT, BaseType.FLOAT, BinaryOperator.MULTIPLY, BaseType.FLOAT);
         binaryTable.put(BaseType.FLOAT, BaseType.FLOAT, BinaryOperator.DIVIDE, BaseType.FLOAT);
+        binaryTable.put(BaseType.CHAR, BaseType.CHAR, BinaryOperator.ADD, BaseType.CHAR);
+        binaryTable.put(BaseType.CHAR, BaseType.CHAR, BinaryOperator.SUBTRACT, BaseType.CHAR);
         binaryTable.put(BaseType.BOOL, BaseType.BOOL, BinaryOperator.EQUAL, BaseType.BOOL);
         binaryTable.put(BaseType.BOOL, BaseType.BOOL, BinaryOperator.NOT_EQUAL, BaseType.BOOL);
         binaryTable.put(BaseType.INT, BaseType.INT, BinaryOperator.EQUAL, BaseType.BOOL);
         binaryTable.put(BaseType.INT, BaseType.INT, BinaryOperator.NOT_EQUAL, BaseType.BOOL);
+        binaryTable.put(BaseType.CHAR, BaseType.CHAR, BinaryOperator.EQUAL, BaseType.BOOL);
+        binaryTable.put(BaseType.CHAR, BaseType.CHAR, BinaryOperator.NOT_EQUAL, BaseType.BOOL);
         binaryTable.put(BaseType.FLOAT, BaseType.FLOAT, BinaryOperator.EQUAL, BaseType.BOOL);
         binaryTable.put(BaseType.FLOAT, BaseType.FLOAT, BinaryOperator.NOT_EQUAL, BaseType.BOOL);
         binaryTable.put(BaseType.INT, BaseType.INT, BinaryOperator.LESS_THAN, BaseType.BOOL);
@@ -82,6 +86,10 @@ public class Typer implements Visitor<TyperState, Node> {
         binaryTable.put(BaseType.FLOAT, BaseType.FLOAT, BinaryOperator.EQUAL_LESS_THAN, BaseType.BOOL);
         binaryTable.put(BaseType.FLOAT, BaseType.FLOAT, BinaryOperator.GREATER_THAN, BaseType.BOOL);
         binaryTable.put(BaseType.FLOAT, BaseType.FLOAT, BinaryOperator.EQUAL_GREATER_THAN, BaseType.BOOL);
+        binaryTable.put(BaseType.CHAR, BaseType.CHAR, BinaryOperator.LESS_THAN, BaseType.BOOL);
+        binaryTable.put(BaseType.CHAR, BaseType.CHAR, BinaryOperator.EQUAL_LESS_THAN, BaseType.BOOL);
+        binaryTable.put(BaseType.CHAR, BaseType.CHAR, BinaryOperator.GREATER_THAN, BaseType.BOOL);
+        binaryTable.put(BaseType.CHAR, BaseType.CHAR, BinaryOperator.EQUAL_GREATER_THAN, BaseType.BOOL);
     }
 
     public List<TypeFailure> getFailures() {

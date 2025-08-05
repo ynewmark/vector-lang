@@ -9,14 +9,14 @@ public class LiteralExpression extends Expression {
     private final int intValue;
     private final boolean boolValue;
     private final double floatValue;
-    private final int type;
+    private final char charValue;
 
     public LiteralExpression(int value) {
         super(new Type(BaseType.INT, new Dimension[0], true));
         this.intValue = value;
         this.boolValue = false;
         this.floatValue = 0;
-        type = 0;
+        this.charValue = '\0';
     }
 
     public LiteralExpression(boolean value) {
@@ -24,7 +24,7 @@ public class LiteralExpression extends Expression {
         this.intValue = 0;
         this.boolValue = value;
         this.floatValue = 0;
-        type = 1;
+        this.charValue = '\0';
     }
 
     public LiteralExpression(double value) {
@@ -32,7 +32,15 @@ public class LiteralExpression extends Expression {
         this.intValue = 0;
         this.boolValue = false;
         this.floatValue = value;
-        type = 2;
+        this.charValue = '\0';
+    }
+
+    public LiteralExpression(char value) {
+        super(new Type(BaseType.CHAR, new Dimension[0], true));
+        this.intValue = 0;
+        this.boolValue = false;
+        this.floatValue = 0;
+        this.charValue = value;
     }
 
     public int getInt() {
@@ -48,28 +56,24 @@ public class LiteralExpression extends Expression {
     }
 
     public long getRaw() {
-        if (type == 0) {
-            return this.intValue;
-        } else if (type == 1) {
-            return this.boolValue ? 1 : 0;
-        } else if (type == 2) {
-            return Double.doubleToLongBits(this.floatValue);
-        } else {
-            return 0;
-        }
+        return switch (getType().getBaseType()) {
+            case BOOL -> this.boolValue ? 1 : 0;
+            case CHAR -> charValue;
+            case FLOAT -> Double.doubleToLongBits(this.floatValue);
+            case INT -> intValue;
+            default -> 0;
+        };
     }
 
     @Override
     public String toString() {
-        if (type == 0) {
-            return Integer.toString(intValue);
-        } else if (type == 1) {
-            return Boolean.toString(boolValue);
-        } else if (type == 2) {
-            return Double.toString(floatValue);
-        } else {
-            return "?";
-        }
+        return switch (getType().getBaseType()) {
+            case BOOL -> Boolean.toString(boolValue);
+            case CHAR -> Character.toString(charValue);
+            case FLOAT -> Double.toString(floatValue);
+            case INT -> Integer.toString(intValue);
+            default -> "?";
+        };
     }
 
     @Override

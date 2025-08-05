@@ -1,0 +1,20 @@
+func main() {
+    let chars = ['a', '1', '\'', 'B'];
+    print chars;
+    for (let i = 0; i < 4; i++) {
+        print isLetter(chars[i]);
+    }
+    print 'z' - 'A';
+}
+
+func isLetter(c: char): bool {
+    return c >= 'A' & c <= 'z';
+}
+
+func yn(b: bool): char {
+    if (b) {
+        return 'y';
+    } else {
+        return 'n';
+    }
+}

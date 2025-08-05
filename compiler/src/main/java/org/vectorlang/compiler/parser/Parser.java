@@ -75,8 +75,18 @@ public class Parser {
             return new LiteralExpression(Integer.parseInt(state.previous().value()));
         } else if (state.matches(TokenType.FLOAT_LITERAL)) {
             return new LiteralExpression(Double.parseDouble(state.previous().value()));
+        } else if (state.matches(TokenType.CHAR_LITERAL)) {
+            return new LiteralExpression(readChar(state.previous().value()));
         } else {
             return null;
+        }
+    }
+
+    private char readChar(String string) {
+        if (string.charAt(1) == '\\') {
+            return Literals.escape(string.charAt(2));
+        } else {
+            return string.charAt(1);
         }
     }
 

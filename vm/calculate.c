@@ -40,6 +40,10 @@ void calc_binary(unsigned long opcode, char *operand1, char *operand2, char *des
             *((double *) destination) = *((double *) operand1) * *((double *) operand2);
         } else if (opcode == OP_F_DIV) {
             *((double *) destination) = *((double *) operand1) / *((double *) operand2);
+        } else if (opcode == OP_C_ADD) {
+            *((char *) destination) = *((char *) operand1) + *((char *) operand2);
+        } else if (opcode == OP_C_SUB) {
+            *((char *) destination) = *((char *) operand1) - *((char *) operand2);
         } else if (opcode == OP_AND) {
             *((char *) destination) = *((char *) operand1) & *((char *) operand2);
         } else if (opcode == OP_OR) {
@@ -56,6 +60,10 @@ void calc_binary(unsigned long opcode, char *operand1, char *operand2, char *des
             *((char *) destination) = *((double *) operand1) == *((double *) operand2);
         } else if (opcode == OP_F_NEQ) {
             *((char *) destination) = *((double *) operand1) != *((double *) operand2);
+        } else if (opcode == OP_C_EQ) {
+            *((char *) destination) = *((char *) operand1) == *((char *) operand2);
+        } else if (opcode == OP_C_NEQ) {
+            *((char *) destination) = *((char *) operand1) != *((char *) operand2);
         } else if (opcode == OP_LT) {
             *((char *) destination) = *((int *) operand1) < *((int *) operand2);
         } else if (opcode == OP_LTE) {
@@ -72,6 +80,14 @@ void calc_binary(unsigned long opcode, char *operand1, char *operand2, char *des
             *((char *) destination) = *((double *) operand1) > *((double *) operand2);
         } else if (opcode == OP_F_GTE) {
             *((char *) destination) = *((double *) operand1) >= *((double *) operand2);
+        } else if (opcode == OP_C_LT) {
+            *((char *) destination) = *((char *) operand1) < *((char *) operand2);
+        } else if (opcode == OP_C_LTE) {
+            *((char *) destination) = *((char *) operand1) <= *((char *) operand2);
+        } else if (opcode == OP_C_GT) {
+            *((char *) destination) = *((char *) operand1) > *((char *) operand2);
+        } else if (opcode == OP_C_GTE) {
+            *((char *) destination) = *((char *) operand1) >= *((char *) operand2);
         }
         current += width1;
         operand1 += width1;
