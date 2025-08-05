@@ -1,0 +1,8 @@
+import library;
+
+func main() {
+    print plus(5, 3);
+    print plus(1, 2);
+    print not(true);
+    print not(false);
+}

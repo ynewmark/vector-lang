@@ -11,6 +11,7 @@ import java.util.List;
 import org.vectorlang.compiler.ast.CodeBase;
 import org.vectorlang.compiler.compiler.Chunk;
 import org.vectorlang.compiler.compiler.Compiler;
+import org.vectorlang.compiler.compiler.ImportManager;
 import org.vectorlang.compiler.compiler.Linker;
 import org.vectorlang.compiler.compiler.Pruner;
 import org.vectorlang.compiler.parser.Lexer;
@@ -26,6 +27,7 @@ public class App {
             System.exit(1);
         }
         File file = new File(args[0]);
+        ImportManager importManager = new ImportManager(file.toPath().getParent());
         FileReader reader;
         StringBuilder builder = new StringBuilder();
         try {
@@ -50,7 +52,7 @@ public class App {
         Typer typer = new Typer();
         Pruner pruner = new Pruner();
         org.vectorlang.compiler.compiler.Compiler compiler = new Compiler();
-        CodeBase typed = typer.type(codeBase);
+        CodeBase typed = typer.type(codeBase, importManager);
         if (!typer.getFailures().isEmpty()) {
             System.err.println("There were the following type failures:");
             for (TypeFailure failure : typer.getFailures()) {
@@ -62,7 +64,7 @@ public class App {
             System.out.println("Optimizing...");
             typed = pruner.prune(typed);
         }
-        Chunk[] chunks = compiler.compile(typed);
+        Chunk[] chunks = compiler.compile(typed, importManager);
         Linker linker = new Linker();
         byte[] data = linker.link(chunks);
         if (args.length == 2 || args.length == 3) {

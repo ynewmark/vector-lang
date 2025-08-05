@@ -16,6 +16,7 @@ import org.vectorlang.compiler.ast.FunctionStatement;
 import org.vectorlang.compiler.ast.GroupingExpression;
 import org.vectorlang.compiler.ast.IdentifierExpression;
 import org.vectorlang.compiler.ast.IfStatement;
+import org.vectorlang.compiler.ast.ImportStatement;
 import org.vectorlang.compiler.ast.IndexExpression;
 import org.vectorlang.compiler.ast.LiteralExpression;
 import org.vectorlang.compiler.ast.PrintStatement;
@@ -39,6 +40,7 @@ public class Parser {
     private ParseRule<Statement> forStatement, whileStatement, assignStatement, assignStatement2, statement;
 
     private ParseRule<FunctionStatement> function;
+    private ParseRule<ImportStatement> importStatement;
 
     public Parser() {
         literalExpression = new ParseRule<>(this::literalExpression, TokenType.SEMICOLON);
@@ -61,6 +63,7 @@ public class Parser {
         assignStatement2 = new ParseRule<>((ParserState state) -> assignStatement(state, false), TokenType.SEMICOLON);
         statement = new ParseRule<>(this::statement, TokenType.CLOSE_BRACE);
         function = new ParseRule<>(this::function, TokenType.CLOSE_BRACE);
+        importStatement = new ParseRule<>(this::importStatement, TokenType.SEMICOLON);
     }
 
     private LiteralExpression literalExpression(ParserState state) {
@@ -361,6 +364,14 @@ public class Parser {
         );
     }
 
+    private ImportStatement importStatement(ParserState state) {
+        state.consume(TokenType.IMPORT);
+        state.consume(TokenType.IDENTIFIER);
+        String name = state.previous().value();
+        state.consume(TokenType.SEMICOLON);
+        return new ImportStatement(name);
+    }
+
     private Type type(ParserState state) {
         if (state.matches(TokenType.COLON)) {
             state.consume(TokenType.IDENTIFIER);
@@ -408,11 +419,19 @@ public class Parser {
     }
 
     public CodeBase parse(List<Token> tokens) {
-        List<FunctionStatement> functions = new ArrayList<>();
+        List<Statement> statements = new ArrayList<>();
         ParserState state = new ParserState(tokens);
         while (state.hasNext()) {
-            functions.add(function.apply(state));
+            if (state.peek().type().equals(TokenType.FUNC)) {
+                statements.add(function.apply(state));
+            } else if (state.peek().type().equals(TokenType.CONST)) {
+                statements.add(statement.apply(state));
+            } else if (state.peek().type().equals(TokenType.IMPORT)) {
+                statements.add(importStatement.apply(state));
+            }
         }
-        return new CodeBase(functions.toArray(new FunctionStatement[0]));
+        return new CodeBase(
+            statements.toArray(new Statement[0])
+        );
     }
 }

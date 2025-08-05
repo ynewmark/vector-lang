@@ -1,5 +1,6 @@
 package org.vectorlang.compiler.typer;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -20,6 +21,7 @@ import org.vectorlang.compiler.ast.FunctionStatement;
 import org.vectorlang.compiler.ast.GroupingExpression;
 import org.vectorlang.compiler.ast.IdentifierExpression;
 import org.vectorlang.compiler.ast.IfStatement;
+import org.vectorlang.compiler.ast.ImportStatement;
 import org.vectorlang.compiler.ast.IndexExpression;
 import org.vectorlang.compiler.ast.LiteralExpression;
 import org.vectorlang.compiler.ast.Node;
@@ -34,6 +36,7 @@ import org.vectorlang.compiler.ast.Visitor;
 import org.vectorlang.compiler.ast.WhileStatement;
 import org.vectorlang.compiler.compiler.BaseType;
 import org.vectorlang.compiler.compiler.BinaryTable;
+import org.vectorlang.compiler.compiler.ImportManager;
 import org.vectorlang.compiler.compiler.UnaryTable;
 
 public class Typer implements Visitor<TyperState, Node> {
@@ -42,9 +45,11 @@ public class Typer implements Visitor<TyperState, Node> {
     private static BinaryTable<BaseType> binaryTable;
 
     private List<TypeFailure> failures;
+    private TyperState rootState;
 
     public Typer() {
         this.failures = new ArrayList<>();
+        this.rootState = new TyperState();
     }
 
     static {
@@ -83,16 +88,30 @@ public class Typer implements Visitor<TyperState, Node> {
         return failures;
     }
 
-    public CodeBase type(CodeBase codeBase) {
-        TyperState state = new TyperState();
-        for (FunctionStatement statement : codeBase.getFunctions()) {
-            state.putFunc(statement.getName(), statement.getParameterTypes(), statement.getReturnType());
+    public CodeBase type(CodeBase codeBase, ImportManager importManager) {
+        Statement[] statements = new Statement[codeBase.getStatements().length];
+        for (int i = 0; i < statements.length; i++) {
+            if (codeBase.getStatements()[i] instanceof FunctionStatement function) {
+                rootState.putFunc(function.getName(), function.getParameterTypes(), function.getReturnType());
+            } else if (codeBase.getStatements()[i] instanceof DeclareStatement declare) {
+                statements[i] = (Statement) declare.accept(this, rootState);
+            } else if (codeBase.getStatements()[i] instanceof ImportStatement importStatement) {
+                try {
+                    CodeBase imported = importManager.getImport(importStatement.getName());
+                    importManager.update(importStatement.getName(), type(imported, importManager));
+                } catch (IOException e) {
+                    failures.add(new TypeFailure(null, null, "Unable to import " + importStatement.getName()));
+                }
+            }
         }
-        FunctionStatement[] functions = new FunctionStatement[codeBase.getFunctions().length];
-        for (int i = 0; i < functions.length; i++) {
-            functions[i] = (FunctionStatement) codeBase.getFunctions()[i].accept(this, state);
+        for (int i = 0; i < statements.length; i++) {
+            if (codeBase.getStatements()[i] instanceof FunctionStatement) {
+                statements[i] = (Statement) codeBase.getStatements()[i].accept(this, rootState);
+            } else {
+                statements[i] = codeBase.getStatements()[i];
+            }
         }
-        return new CodeBase(functions);
+        return new CodeBase(statements);
     }
 
     @Override

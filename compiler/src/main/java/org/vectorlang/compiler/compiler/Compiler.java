@@ -1,5 +1,6 @@
 package org.vectorlang.compiler.compiler;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -18,6 +19,7 @@ import org.vectorlang.compiler.ast.FunctionStatement;
 import org.vectorlang.compiler.ast.GroupingExpression;
 import org.vectorlang.compiler.ast.IdentifierExpression;
 import org.vectorlang.compiler.ast.IfStatement;
+import org.vectorlang.compiler.ast.ImportStatement;
 import org.vectorlang.compiler.ast.IndexExpression;
 import org.vectorlang.compiler.ast.LiteralExpression;
 import org.vectorlang.compiler.ast.PrintStatement;
@@ -35,6 +37,12 @@ public class Compiler implements Visitor<CompilerState, Chunk> {
 
     private final static UnaryTable<OpCode> unaryTable = new UnaryTable<>();
     private final static BinaryTable<OpCode> binaryTable = new BinaryTable<>();
+
+    private CompilerState rootState;
+
+    public Compiler() {
+        this.rootState = new CompilerState(null, new Counter(), new Counter(), new Counter());
+    }
 
     static {
         unaryTable.put(BaseType.BOOL, UnaryOperator.NEGATE, OpCode.NOT);
@@ -67,16 +75,30 @@ public class Compiler implements Visitor<CompilerState, Chunk> {
         binaryTable.put(BaseType.FLOAT, BaseType.FLOAT, BinaryOperator.CONCAT, OpCode.CONCAT);
     }
 
-    public Chunk[] compile(CodeBase codeBase) {
-        Chunk[] functions = new Chunk[codeBase.getFunctions().length];
-        CompilerState state = new CompilerState(null, new Counter(), new Counter(), new Counter());
-        for (FunctionStatement function : codeBase.getFunctions()) {
-            state.addFunction(function.getName());
+    public Chunk[] compile(CodeBase codeBase, ImportManager importManager) {
+        List<Chunk> chunks = new ArrayList<>();
+        for (Statement statement : codeBase.getStatements()) {
+            if (statement instanceof FunctionStatement function) {
+                rootState.addFunction(function.getName());
+            } else if (statement instanceof DeclareStatement declare) {
+
+            } else if (statement instanceof ImportStatement importStatement) {
+                try {
+                    CodeBase imported = importManager.getImport(importStatement.getName());
+                    for (Chunk chunk : compile(imported, importManager)) {
+                        chunks.add(chunk);
+                    }
+                } catch (IOException e) {
+                    // TODO: find what to do
+                }
+            }
         }
-        for (int i = 0; i < functions.length; i++) {
-            functions[i] = codeBase.getFunctions()[i].accept(this, state);
+        for (Statement statement : codeBase.getStatements()) {
+            if (statement instanceof FunctionStatement) {
+                chunks.add(statement.accept(this, rootState));
+            }
         }
-        return functions;
+        return chunks.toArray(new Chunk[0]);
     }
 
     @Override

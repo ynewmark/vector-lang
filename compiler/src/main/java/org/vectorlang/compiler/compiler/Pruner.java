@@ -53,11 +53,11 @@ public class Pruner implements Visitor<Void, Node> {
     }
 
     public CodeBase prune(CodeBase codeBase) {
-        FunctionStatement[] functions = new FunctionStatement[codeBase.getFunctions().length];
-        for (int i = 0; i < functions.length; i++) {
-            functions[i] = (FunctionStatement) codeBase.getFunctions()[i].accept(this, null);
+        Statement[] statements = new Statement[codeBase.getStatements().length];
+        for (int i = 0; i < statements.length; i++) {
+            statements[i] = (Statement) codeBase.getStatements()[i].accept(this, null);
         }
-        return new CodeBase(functions);
+        return new CodeBase(statements);
     }
 
     @Override

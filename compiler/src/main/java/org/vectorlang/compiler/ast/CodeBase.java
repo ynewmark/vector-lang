@@ -2,13 +2,13 @@ package org.vectorlang.compiler.ast;
 
 public class CodeBase {
     
-    private final FunctionStatement[] functions;
+    private final Statement[] statements;
 
-    public CodeBase(FunctionStatement[] functions) {
-        this.functions = functions;
+    public CodeBase(Statement[] statements) {
+        this.statements = statements;
     }
 
-    public FunctionStatement[] getFunctions() {
-        return functions;
+    public Statement[] getStatements() {
+        return statements;
     }
 }
